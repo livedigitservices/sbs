@@ -11,7 +11,7 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://sbs-chi-ten.vercel.app/associate-resources',
+    'https://sbs-chi-ten.vercel.app',
     'https://sbs.ind.in',
     'https://www.sbs.ind.in',
   ],
