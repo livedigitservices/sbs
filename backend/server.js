@@ -26,6 +26,7 @@ app.get('/', (req, res) => res.json({ message: 'SBS API is running' }));
 // Routes
 
 app.use('/api/contacts', require('./routes/contactRoutes'));
+app.use('/api/franchise-partners', require('./routes/franchisePartnerRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/qr', require('./routes/qrRoutes'));
 app.use('/api/settings', require('./routes/settingsRoutes'));

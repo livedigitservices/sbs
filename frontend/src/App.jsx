@@ -31,6 +31,7 @@ import StudyAbroad from './pages/public/StudyAbroad'
 import HotelManagementIndia from './pages/public/HotelManagementIndia'
 import HotelManagementMauritius from './pages/public/HotelManagementMauritius'
 import AdminContacts from './pages/admin/AdminContacts'
+import AdminFranchisePartners from './pages/admin/AdminFranchisePartners'
 import AdminAssociates from './pages/admin/AdminAssociates'
 
 import AssociateLogin from './pages/associate/AssociateLogin'
@@ -95,6 +96,7 @@ export default function App() {
         <Route index element={<AdminDashboard />} />
         <Route path="resources" element={<AdminResources />} />
         <Route path="contacts" element={<AdminContacts />} />
+        <Route path="franchise-partners" element={<AdminFranchisePartners />} />
         <Route path="associates" element={<AdminAssociates />} />
         <Route path="qr" element={<AdminQRCode />} />
         <Route path="settings" element={<AdminSettings />} />
