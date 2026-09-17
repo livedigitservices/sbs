@@ -23,11 +23,57 @@ const buildFilterQuery = ({ subject, level, language, q }) => {
   return query;
 };
 
-// Public: only active listings, optionally filtered by subject/level/language/q.
+// Public: active listings, optionally filtered by subject/level/language/q.
+//
+// When one or more of subject/level/language are selected, this no longer
+// requires a listing to match ALL of them (strict AND). Instead it ranks by
+// how many of the selected filters each listing matches: a tutor matching
+// all 3 selected filters appears first, then tutors matching 2, then
+// tutors matching only 1. A listing matching NONE of the selected filters
+// is excluded. Ties fall back to `order` then newest first.
+//
+// Note: this uses an exact match (via $in) against the array fields rather
+// than the case-insensitive regex used elsewhere, because the dropdown
+// values come straight from Tutor.distinct() (getFilterOptions) — i.e.
+// they are guaranteed to equal what's stored, so exact match is safe and
+// lets the match-count be computed cheaply in the aggregation pipeline.
 exports.getTutors = async (req, res) => {
   try {
-    const query = { ...buildFilterQuery(req.query), isActive: true };
-    const tutors = await Tutor.find(query).sort({ order: 1, createdAt: -1 });
+    const { subject, level, language, q } = req.query;
+
+    const match = { isActive: true };
+    if (q && q.trim()) {
+      const rx = { $regex: q.trim(), $options: 'i' };
+      match.$or = [{ name: rx }, { profileInfo: rx }, { subjects: rx }];
+    }
+
+    const hasFilters = Boolean(subject || level || language);
+
+    // No subject/level/language chosen — plain listing, original sort.
+    if (!hasFilters) {
+      const tutors = await Tutor.find(match).sort({ order: 1, createdAt: -1 });
+      return res.json(tutors);
+    }
+
+    // One or more filters chosen — score by match count, best matches first.
+    const tutors = await Tutor.aggregate([
+      { $match: match },
+      {
+        $addFields: {
+          matchCount: {
+            $add: [
+              subject ? { $cond: [{ $in: [subject.trim(), '$subjects'] }, 1, 0] } : 0,
+              level ? { $cond: [{ $in: [level.trim(), '$levels'] }, 1, 0] } : 0,
+              language ? { $cond: [{ $in: [language.trim(), '$languages'] }, 1, 0] } : 0,
+            ],
+          },
+        },
+      },
+      // Exclude listings that match none of the chosen filters.
+      { $match: { matchCount: { $gt: 0 } } },
+      { $sort: { matchCount: -1, order: 1, createdAt: -1 } },
+    ]);
+
     res.json(tutors);
   } catch (err) {
     res.status(500).json({ message: err.message });
