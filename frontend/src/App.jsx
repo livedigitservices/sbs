@@ -1,4 +1,4 @@
-import React from 'react'
+
 import { Routes, Route, Navigate } from 'react-router-dom'
 import PublicLayout from './components/PublicLayout'
 import AdminLayout from './components/admin/AdminLayout'
@@ -10,13 +10,8 @@ import Home from './pages/public/Home'
 import JobsLanding from './pages/public/JobsLanding'
 import Jobs from './pages/public/Jobs'
 import OnlineDegrees from './pages/public/OnlineDegrees'
-import BusinessOffers from './pages/public/BusinessOffers'
-import IceCreamParlour from './pages/public/IceCreamParlour'
-import ImportsExports from './pages/public/ImportsExports'
-import BioCNG from './pages/public/BioCNG'
 import AgriInvestments from './pages/public/AgriInvestments'
 import Loans from './pages/public/Loans'
-import OtherServices from './pages/public/OtherServices'
 import PhdAdmissions from './pages/public/PhdAdmissions'
 import MoreServices from './pages/public/MoreServices'
 import Contact from './pages/public/Contact'
@@ -59,13 +54,8 @@ export default function App() {
         <Route path="/jobs" element={<JobsLanding />} />
         <Route path="/jobs/:type" element={<Jobs />} />
         <Route path="/online-degrees" element={<OnlineDegrees />} />
-        <Route path="/business-offers" element={<BusinessOffers />} />
-        <Route path="/ice-cream-parlour" element={<IceCreamParlour />} />
-        <Route path="/imports-exports" element={<ImportsExports />} />
-        <Route path="/bio-cng" element={<BioCNG />} />
         <Route path="/agri-investments" element={<AgriInvestments />} />
         <Route path="/loans" element={<Loans />} />
-        <Route path="/other-services" element={<OtherServices />} />
         <Route path="/phd-admissions" element={<PhdAdmissions />} />
         <Route path="/more-services" element={<MoreServices />} />
         <Route path="/study-abroad" element={<StudyAbroad />} />
