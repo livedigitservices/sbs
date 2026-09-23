@@ -3,7 +3,6 @@ import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { Phone, MapPin, Headset, Sun, Moon, Home } from 'lucide-react'
 import api, { associateLogout } from '../api'
 import logo from '../assets/logo-sbs.jpeg'
-import FloatingCallButton from './FloatingCallButton'
 
 
 function useTheme() {
@@ -141,7 +140,6 @@ export default function PublicLayout() {
           </div>
         </div>
       </div>
-       <FloatingCallButton />
     </div>
   )
 }
