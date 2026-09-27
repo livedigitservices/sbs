@@ -13,25 +13,8 @@
 
 * { box-sizing: border-box; }
 
-/* ─── DARK MODE (default) ─── */
+/* ─── THEME (light, white) ─── */
 :root {
-  --bg-primary:    #0A0A0A;
-  --bg-secondary:  #111111;
-  --bg-tertiary:   #1A1A1A;
-  --bg-card:       #111111;
-  --border-color:  rgba(255,255,255,0.08);
-  --border-gold:   rgba(255,215,0,0.2);
-  --text-primary:  #F9F9F9;
-  --text-secondary:#9CA3AF;
-  --text-muted:    #4B5563;
-  --nav-bg:        rgba(10,10,10,0.95);
-  --sidebar-bg:    #111111;
-  --input-bg:      #1A1A1A;
-  --scrollbar-bg:  #111;
-}
-
-/* ─── LIGHT MODE ─── */
-html.light {
   --bg-primary:    #F8F7F2;
   --bg-secondary:  #FFFFFF;
   --bg-tertiary:   #F1EFE8;
@@ -111,7 +94,7 @@ body.no-scroll {
 }
 .card-hover:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(255,215,0,0.12);
+  box-shadow: 0 20px 40px rgba(180,130,0,0.10);
 }
 
 /* ─── GOLD TEXT ─── */
@@ -135,7 +118,7 @@ body.no-scroll {
 /* ─── INPUT FOCUS ─── */
 input:focus, select:focus, textarea:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(255,215,0,0.35);
+  box-shadow: 0 0 0 2px rgba(180,130,0,0.3);
 }
 
 /* ─── PAGE TRANSITION ─── */
@@ -154,8 +137,6 @@ input:focus, select:focus, textarea:focus {
 }
 .pulse-gold { animation: pulse-gold 6s infinite; }
 
-
-
 /* ─── LOGO SCROLLER ─── */
 @keyframes scroll-left {
   0%   { transform: translateX(0); }
@@ -169,21 +150,6 @@ input:focus, select:focus, textarea:focus {
 .logo-scroll-right { animation: scroll-right 28s linear infinite; }
 .logo-scroll-left:hover,
 .logo-scroll-right:hover { animation-play-state: paused; }
-
-
-
-/* ─── LIGHT MODE OVERRIDES for cards/inputs ─── */
-html.light .card-hover:hover {
-  box-shadow: 0 20px 40px rgba(180,130,0,0.10);
-}
-html.light input:focus,
-html.light select:focus,
-html.light textarea:focus {
-  box-shadow: 0 0 0 2px rgba(180,130,0,0.3);
-}
-
-
-.pulse-gold { animation: pulse-gold 6s infinite; }
 
 @keyframes pulse-call {
   0%,100% { box-shadow: 0 0 0 0 rgba(37,211,102,0.55); }

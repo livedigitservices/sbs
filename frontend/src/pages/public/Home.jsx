@@ -13,6 +13,10 @@ const PHD_IMG =
 
 const BLUE = '#2563EB'
 
+// Same vivid blue gradient used on the Online Tutors page, so the homepage
+// reads consistently with where its cards link to.
+const PAGE_BG = 'linear-gradient(180deg, #1E63B8 0%, #123A7A 45%, #0A1E3F 100%)'
+
 const SERVICE_CARDS = [
   {
     to: '/tutors',
@@ -39,7 +43,7 @@ const SERVICE_CARDS = [
 
 export default function Home() {
   return (
-    <div className="page-enter bg-theme-primary min-h-full flex flex-col">
+    <div className="page-enter h-full flex flex-col" style={{ background: PAGE_BG }}>
       {/* Top bar */}
       <header className="text-white" >
         <div className="max-w-3xl mx-auto px-2 py-3">

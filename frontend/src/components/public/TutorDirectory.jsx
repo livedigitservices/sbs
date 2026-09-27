@@ -125,7 +125,7 @@ export default function TutorDirectory() {
       <div className="max-w-6xl mx-auto px-4 py-8">
             <div className="bg-red-600/10 border border-red-600/30 rounded-xl px-4 py-3 mb-6">
         <p className="text-red-500 text-xs font-bold uppercase tracking-wide mb-1.5">Note</p>
-        <ul className="text-theme-primary text-xs sm:text-sm font-semibold leading-snug list-disc pl-4 space-y-1">
+        <ul className="text-amber-50 text-xs sm:text-sm font-semibold leading-snug list-disc pl-4 space-y-1">
           <li>Ask for a free demo</li>
           <li>Pay after classes</li>
           <li>Only classes — no other things</li>

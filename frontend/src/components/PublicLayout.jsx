@@ -1,33 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Outlet, Link, useNavigate } from 'react-router-dom'
-import { Phone, MapPin, Headset, Sun, Moon, Home } from 'lucide-react'
+import { Phone, MapPin, Headset, Home } from 'lucide-react'
 import api, { associateLogout } from '../api'
 
 const NAVY_BLUE = '#2563EB'
 
-
-function useTheme() {
-  const [dark, setDark] = useState(() => {
-    const saved = localStorage.getItem('sbs_theme')
-    if (saved) return saved === 'dark'
-    return true
-  })
-
-  useEffect(() => {
-    if (dark) {
-      document.documentElement.classList.remove('light')
-    } else {
-      document.documentElement.classList.add('light')
-    }
-    localStorage.setItem('sbs_theme', dark ? 'dark' : 'light')
-  }, [dark])
-
-  return [dark, setDark]
-}
-
 export default function PublicLayout() {
   const [cities, setCities] = useState(['Vizag','Eluru','Khammam','Hyderabad','Vijayawada','Guntur','Warangal'])
-  const [dark, setDark] = useTheme()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -48,14 +27,13 @@ export default function PublicLayout() {
 
   const ticker = [...cities, ...cities]
 
-  // Navbar is always blue with white text/icons, regardless of the
-  // light/dark theme toggle — only the page body below it follows theme.
-  const mainBg    = dark ? 'bg-[#0A0A0A]' : 'bg-[#F8F7F2]'
+  // Navbar is always blue with white text/icons; the page body is a plain
+  // white/off-white background.
   const supportBtn = 'bg-white text-[#2563EB] hover:bg-white/90'
   const iconBtn = 'text-white hover:bg-white/15'
 
   return (
-    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${mainBg}`}
+    <div className="min-h-screen flex flex-col bg-[#F8F7F2]"
       style={{ paddingTop: 0, paddingBottom: 0 }}>
 
       {/* ── NAVBAR ── */}
@@ -64,16 +42,7 @@ export default function PublicLayout() {
         style={{ backgroundColor: NAVY_BLUE }}
       >
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
-
-          {/* Logo (text-only, no image) */}
-          {/* <Link to="/" className="flex items-center gap-2.5 flex-shrink-0">
-            <span className="text-xl font-extrabold tracking-wide text-white leading-none">SBS</span>
-            <div className="hidden sm:block border-l border-white/30 pl-2.5">
-              <p className="font-semibold text-sm md:text-xs leading-none text-white">Sai Business Services</p>
-              <p className="text-[10px] mt-0.5 text-white/80">We Find Your Way</p>
-            </div>
-          </Link> */}
-          <p className='font-extrabold text-3xl'>www.sbs.ind.in</p>
+          <p className='font-extrabold text-3xl text-amber-50' >www.sbs.ind.in</p>
 
           <div className="flex items-center gap-2">
             {/* Home */}
@@ -86,16 +55,6 @@ export default function PublicLayout() {
             >
               <Home size={18} />
             </Link>
-
-            {/* Theme toggle */}
-            <button
-              onClick={() => setDark(d => !d)}
-              title={dark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              aria-label="Toggle theme"
-              className={`p-2 rounded-lg transition-all duration-200 ${iconBtn}`}
-            >
-              {dark ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
 
             {/* Customer Support */}
             <Link
@@ -121,7 +80,6 @@ export default function PublicLayout() {
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#006aff] flex items-center overflow-hidden border-t-2 " style={{ height: '40px' }}>
         <Link to="/contact"
           className="shrink-0 text-white font-bold text-xs bg-[#006aff] px-4 h-full flex items-center gap-1.5 hover:brightness-110 transition z-10 "
-          
         >
           <Phone size={12} />
           Contact Us

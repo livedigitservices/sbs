@@ -92,20 +92,11 @@ export default function AssociateLeads() {
   const labelClass = "text-theme-muted text-xs font-semibold uppercase tracking-wide mb-1.5 block"
 
   return (
-    <div>
-      <div className="bg-red-600/10 border border-red-600/30 rounded-xl px-4 py-3 mb-6">
-        <p className="text-red-500 text-xs font-bold uppercase tracking-wide mb-1.5">Note</p>
-        <ul className="text-theme-primary text-xs sm:text-sm font-semibold leading-snug list-disc pl-4 space-y-1">
-          <li>Ask for a free demo</li>
-          <li>Pay after classes</li>
-          <li>Only classes — no other things</li>
-        </ul>
-      </div>
-
+    <div >
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <div>
-          <h1 className="text-theme-primary font-black text-2xl">Manage Tutors</h1>
-          <p className="text-theme-secondary text-sm">{tutors.length} listing{tutors.length === 1 ? '' : 's'}</p>
+          <h1 className="text-theme-primary font-black text-2xl">Add Tutors</h1>
+          {/* <p className="text-theme-secondary text-sm">{tutors.length} listing{tutors.length === 1 ? '' : 's'}</p> */}
         </div>
         <button onClick={openAdd}
           className="flex items-center gap-2 bg-[#FFD700] text-[#0A0A0A] font-bold px-4 py-2.5 rounded-xl hover:bg-[#E6C200] transition text-sm">
@@ -113,7 +104,7 @@ export default function AssociateLeads() {
         </button>
       </div>
 
-      {loading ? (
+      {/* {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {[...Array(8)].map((_, i) => (
             <div key={i} className="bg-theme-card border border-theme rounded-2xl h-56 animate-pulse" />
@@ -163,7 +154,7 @@ export default function AssociateLeads() {
             </div>
           ))}
         </div>
-      )}
+      )} */}
 
       {modal.open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
