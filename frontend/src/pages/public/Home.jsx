@@ -43,35 +43,35 @@ const SERVICE_CARDS = [
 
 export default function Home() {
   return (
-    <div className="page-enter h-full flex flex-col" style={{ background: PAGE_BG }}>
+    <div className="page-enter h-full flex flex-col" >
       {/* Top bar */}
       <header className="text-white" >
         <div className="max-w-3xl mx-auto px-2 py-3">
           <div className="grid grid-cols-2 gap-2.5">
             <Link
               to="/associate/register"
-              className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-white bg-white/15 border border-white/30 transition-all hover:bg-white/25"
+              className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-black bg-white/15 border border-black/30 transition-all hover:bg-white/25"
             >
               <UserPlus size={15} />
               Associate Registration
             </Link>
             <Link
               to="/associate/login"
-              className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-white bg-white/15 border border-white/30 transition-all hover:bg-white/25"
+              className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-black bg-white/15 border border-black/30 transition-all hover:bg-white/25"
             >
               <LogIn size={15} />
               Associate Login
             </Link>
             <Link
               to="/associate-resources"
-              className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-white bg-white/15 border border-white/30 transition-all hover:bg-white/25"
+              className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-black bg-white/15 border border-black/30 transition-all hover:bg-white/25"
             >
               <Users size={15} />
               Associate Resources
             </Link>
             <Link
               to="/admin/login"
-              className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-white bg-white/15 border border-white/30 transition-all hover:bg-white/25"
+              className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-black bg-white/15 border border-black/30 transition-all hover:bg-white/25"
             >
               <ShieldCheck size={15} />
               Admin Login
@@ -82,7 +82,7 @@ export default function Home() {
 
       {/* Services */}
       <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:py-10">
-        <div className="flex flex-row flex-wrap gap-6">
+        <div className="flex flex-row flex-wrap gap-4">
           {SERVICE_CARDS.map(({ to, image, tag, title, desc }) => (
             <Link
               key={to}

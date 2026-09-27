@@ -80,7 +80,8 @@ export default function TutorDirectory() {
   }, [contactTutor])
 
   return (
-    <div className="page-enter min-h-screen" style={{ background: PAGE_BG }}>
+    <div className="min-h-screen" style={{ background: PAGE_BG }}>
+      <div className="page-enter">
       {/* Header hero — full-bleed edge-to-edge photo, matching the other
           static service pages, instead of a rounded card inset in the
           padded container. */}
@@ -125,7 +126,7 @@ export default function TutorDirectory() {
       <div className="max-w-6xl mx-auto px-4 py-8">
             <div className="bg-red-600/10 border border-red-600/30 rounded-xl px-4 py-3 mb-6">
         <p className="text-red-500 text-xs font-bold uppercase tracking-wide mb-1.5">Note</p>
-        <ul className="text-amber-50 text-xs sm:text-sm font-semibold leading-snug list-disc pl-4 space-y-1">
+        <ul className="text-white text-xs sm:text-sm font-semibold leading-snug list-disc pl-4 space-y-1">
           <li>Ask for a free demo</li>
           <li>Pay after classes</li>
           <li>Only classes — no other things</li>
@@ -231,8 +232,13 @@ export default function TutorDirectory() {
           </div>
         )}
       </div>
+      </div>
 
-      {/* Contact popup */}
+      {/* Contact popup — rendered as a sibling of the page-enter wrapper
+          above (not nested inside it). page-enter's transform animation
+          creates a containing block for position:fixed descendants, so
+          nesting the modal inside it made "fixed inset-0" center against
+          that scrollable transformed div instead of the real viewport. */}
       {contactTutor && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
