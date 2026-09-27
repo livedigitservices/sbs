@@ -5,3 +5,11 @@ export const CORE_SERVICES = [
   { to: '/phd-admissions', label: 'Ph. D Admissions \nFullTime/PartTime/ \n Online Ph.D/FullFunded/ \n Research/Honorary Ph.D' },
  
 ]
+
+export const RESOURCE_CATEGORY_LABELS = [
+  'Find your Online Tutor/Trainer',
+  'Need Extra Income?',
+  'Online Degrees',
+  'Ph. D Admissions',
+  'Freelancer/WFH',
+]

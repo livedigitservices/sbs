@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const Associate = require('../models/Associate');
-const Lead = require('../models/Lead');
 
 exports.login = async (req, res) => {
   try {
@@ -17,18 +16,12 @@ exports.login = async (req, res) => {
 
 exports.getDashboardStats = async (req, res) => {
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const [totalAssociates, activeAssociates, totalLeads, todayLeads, recentLeads] = await Promise.all([
+    const [totalAssociates, activeAssociates] = await Promise.all([
       Associate.countDocuments(),
       Associate.countDocuments({ isActive: true }),
-      Lead.countDocuments(),
-      Lead.countDocuments({ createdAt: { $gte: today } }),
-      Lead.find().sort({ createdAt: -1 }).limit(10),
     ]);
 
-    res.json({ totalAssociates, activeAssociates, totalLeads, todayLeads, recentLeads });
+    res.json({ totalAssociates, activeAssociates });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -37,12 +30,7 @@ exports.getDashboardStats = async (req, res) => {
 exports.getAssociates = async (req, res) => {
   try {
     const associates = await Associate.find().sort({ createdAt: -1 }).select('-password');
-    const leadCounts = await Lead.aggregate([
-      { $group: { _id: '$associate', count: { $sum: 1 } } },
-    ]);
-    const countMap = Object.fromEntries(leadCounts.map(c => [String(c._id), c.count]));
-    const result = associates.map(a => ({ ...a.toObject(), leadCount: countMap[String(a._id)] || 0 }));
-    res.json(result);
+    res.json(associates);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
