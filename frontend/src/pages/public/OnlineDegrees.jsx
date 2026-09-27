@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   CalendarClock, Briefcase, Laptop, Award,
 } from 'lucide-react'
@@ -87,6 +88,7 @@ function RedButton({ children, onClick, className = '' }) {
 /* ---------------------------------- PAGE ----------------------------------- */
 
 export default function OnlineDegrees() {
+  const navigate = useNavigate()
   const [panel, setPanel] = useState({ open: false, degree: null })
 
   const openEnquiry = (title) =>
@@ -197,7 +199,7 @@ export default function OnlineDegrees() {
               </div>
             ))}
             <div className="flex items-start sm:items-end">
-              <RedButton onClick={() => openEnquiry('Online Courses — Enquire')}>Enquire Now!</RedButton>
+              <RedButton onClick={() => navigate('/contact')}>Enquire Now!</RedButton>
             </div>
           </div>
         </div>
@@ -226,7 +228,7 @@ export default function OnlineDegrees() {
 
         <div className="flex flex-wrap gap-3 justify-center mb-10">
           <RedButton onClick={() => openEnquiry('Online Courses — Explore')}>Explore Courses</RedButton>
-          <RedButton onClick={() => openEnquiry('Online Courses — Apply')}>Apply Now</RedButton>
+          <RedButton onClick={() => navigate('/contact')}>Apply Now</RedButton>
         </div>
 
         <div className="rounded-xl p-5 text-left bg-[#FBEAE8] dark:bg-[#3B0808]/40">

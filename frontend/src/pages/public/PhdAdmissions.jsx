@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import PopupForm from '../../components/PopupForm'
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const phdTypes = [
   'Regular Ph.D',
@@ -32,7 +32,7 @@ const YELLOW = '#f4c542'
 const RED = '#dc2626'
 
 export default function PhdAdmissions() {
-  const [panel, setPanel] = useState(false)
+  const navigate = useNavigate()
 
   return (
     <div className="page-enter min-h-screen" style={{ backgroundColor: NAVY }}>
@@ -124,7 +124,7 @@ export default function PhdAdmissions() {
 
           {/* Enquiry button */}
           <button
-            onClick={() => setPanel(false)}
+            onClick={() => navigate('/contact')}
             className="w-full py-4 rounded-xl font-bold text-base text-white transition hover:opacity-90"
             style={{ backgroundColor: RED }}
           >
@@ -132,15 +132,6 @@ export default function PhdAdmissions() {
           </button>
         </div>
       </div>
-
-      <PopupForm
-        open={panel}
-        onClose={() => setPanel(false)}
-        type="phd_admissions"
-        jobType={null}
-        refId={null}
-        refTitle="Ph.D Admissions"
-      />
     </div>
   )
 }

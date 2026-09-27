@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, GraduationCap, Phone, Mail, X, MessageCircle } from 'lucide-react'
+import { ArrowLeft, GraduationCap, Phone, Mail, X, MessageCircle, UserPlus } from 'lucide-react'
 import api from '../../api'
 
 /* -------------------------------- PALETTE --------------------------------
@@ -97,7 +97,7 @@ export default function TutorDirectory() {
           style={{ background: `linear-gradient(180deg, ${NAVY}99 0%, ${NAVY}cc 55%, ${NAVY} 100%)` }}
         />
 
-        <div className="relative z-10 max-w-6xl mx-auto px-4 py-10 sm:py-14">
+        <div className="relative z-10 max-w-6xl mx-auto px-4 py-12 sm:py-14">
           <div
             className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-4"
             style={{ backgroundColor: 'rgba(244,197,66,0.12)', border: `1px solid ${YELLOW}55` }}
@@ -107,14 +107,30 @@ export default function TutorDirectory() {
               FIND YOUR EXPERT
             </span>
           </div>
-          <h1 className="text-white font-black text-2xl mb-1">Find your </h1>
           <p className="text-white/80 text-[14px] uppercase">
             Online Tutor / Trainer / Teacher / Coach / Mentor / Advisor / Counsellor
           </p>
         </div>
-      </div>
 
+        {/* Register-as-tutor callout — bottom-right corner of the banner */}
+        <Link
+          to="/contact"
+          className="absolute z-20 bottom-3 right-3 sm:bottom-5 sm:right-5 flex items-center gap-1.5 bg-red-600 text-white text-xs sm:text-sm font-bold px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-lg shadow-lg hover:bg-red-700 transition"
+        >
+          <UserPlus size={14} />
+          Register as Online Tutor
+        </Link>
+      </div>
+          
       <div className="max-w-6xl mx-auto px-4 py-8">
+            <div className="bg-red-600/10 border border-red-600/30 rounded-xl px-4 py-3 mb-6">
+        <p className="text-red-500 text-xs font-bold uppercase tracking-wide mb-1.5">Note</p>
+        <ul className="text-theme-primary text-xs sm:text-sm font-semibold leading-snug list-disc pl-4 space-y-1">
+          <li>Ask for a free demo</li>
+          <li>Pay after classes</li>
+          <li>Only classes — no other things</li>
+        </ul>
+      </div>
         {/* Search + filters */}
         <div
           className="rounded-2xl p-4 mb-6 space-y-3"

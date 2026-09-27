@@ -5,6 +5,16 @@ import api from '../../api'
 const STATE_COLORS = ['#4488FF', '#FF4444', '#44DD88', '#FFD700', '#FF88AA', '#AA88FF']
 const FRANCHISE_COLOR = '#FFD700'
 
+// Keeps only digits and a leading "+" so tel: links are always well-formed,
+// even if a number was pasted into the Admin panel with spaces, dashes,
+// or other stray characters.
+const cleanPhone = (raw) => {
+  const trimmed = (raw || '').trim()
+  const hasPlus = trimmed.startsWith('+')
+  const digits = trimmed.replace(/\D/g, '')
+  return hasPlus ? `+${digits}` : digits
+}
+
 export default function Contact() {
   const [contacts, setContacts] = useState([])
   const [franchisePartners, setFranchisePartners] = useState([])
@@ -102,7 +112,7 @@ export default function Contact() {
                                 {p.name}
                               </span>
                               <a
-                                href={`tel:${p.phone}`}
+                                href={`tel:${cleanPhone(p.phone)}`}
                                 className="flex items-center gap-1.5 text-sm font-mono transition-opacity hover:opacity-70"
                                 style={{ color: FRANCHISE_COLOR }}
                               >
@@ -158,7 +168,7 @@ export default function Contact() {
                                 {p.name}
                               </span>
                               <a
-                                href={`tel:${p.phone}`}
+                                href={`tel:${cleanPhone(p.phone)}`}
                                 className="flex items-center gap-1.5 text-sm font-mono transition-opacity hover:opacity-70"
                                 style={{ color }}
                               >

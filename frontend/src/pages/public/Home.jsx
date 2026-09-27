@@ -1,193 +1,113 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronRight, Users, ShieldCheck, Search, UserPlus, LogIn } from 'lucide-react'
-import { CORE_SERVICES, HOME_EXTRA_SERVICES } from '../../constants/coreServices'
+import { Users, ShieldCheck, UserPlus, LogIn, ArrowRight, Phone } from 'lucide-react'
 
+// Same source images already used on each service's own page, so the
+// homepage preview looks consistent with where each card links to.
+const TUTOR_IMG =
+  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=80'
+const DEGREE_IMG =
+  'https://images.stockcake.com/public/e/e/c/eec11db7-afd9-4bbe-88ee-07002f666861_large/cozy-study-time-stockcake.jpg'
+const PHD_IMG =
+  'https://images.stockcake.com/public/e/7/4/e74c3df6-8b5e-46cd-a1cb-f3f455efcc8e_large/graduation-cap-toss-stockcake.jpg'
 
-const ALL_HOME_SERVICES = [...CORE_SERVICES, ...HOME_EXTRA_SERVICES]
+const BLUE = '#2563EB'
 
-// How long the pointer rests on each service before moving to the next one.
-const POINTER_INTERVAL_MS = 2200
-
-// One distinct cool-tone color per service — sized to ALL_HOME_SERVICES
-// (19 entries) so nothing repeats. If services are added later, add a new
-// cool hex here too, or colors will start cycling again.
-const SERVICE_COLORS = [
-  '#E11D48', // Rose
-  '#EA580C', // Orange
-  '#CA8A04', // Amber
-  '#65A30D', // Lime
-  '#16A34A', // Green
-  '#0D9488', // Teal
-  '#0891B2', // Cyan
-  '#0284C7', // Sky Blue
-  '#2563EB', // Blue
-  '#4F46E5', // Indigo
-  '#7C3AED', // Violet
-  '#9333EA', // Purple
-  '#C026D3', // Fuchsia
-  '#DB2777', // Pink
-  '#B91C1C', // Red
-  '#92400E', // Brown
-  '#475569', // Slate
-  '#334155', // Dark Slate
-  '#0F766E', // Dark Teal
-];  
+const SERVICE_CARDS = [
+  {
+    to: '/tutors',
+    image: TUTOR_IMG,
+    tag: 'Find your expert',
+    title: 'Online Tutors',
+    desc: 'Tutor / Trainer / Teacher / Coach / Mentor / Advisor / Counsellor',
+  },
+  {
+    to: '/online-degrees',
+    image: DEGREE_IMG,
+    tag: 'Study online',
+    title: 'Online Degrees',
+    desc: 'BA · B.Com · BBA · BCA · MA · M.Com · MBA · MCA',
+  },
+  {
+    to: '/phd-admissions',
+    image: PHD_IMG,
+    tag: 'Add Dr. to your name',
+    title: 'Ph.D Admissions',
+    desc: 'Full Time / Part Time / Online / Fully Funded / Research / Honorary Ph.D',
+  },
+]
 
 export default function Home() {
-  const [query, setQuery] = useState('')
-  const [activeIndex, setActiveIndex] = useState(0)
-  const [pointerPos, setPointerPos] = useState(null) // { top, left, height }
-  const listRef = useRef(null)
-  const itemRefs = useRef([])
-
-  const filteredServices = ALL_HOME_SERVICES.filter(({ label }) =>
-    label.toLowerCase().includes(query.trim().toLowerCase())
-  )
-
-  // Whenever the visible list changes (e.g. the visitor types a search
-  // query), snap the pointer back to the first result so it never points
-  // at a service that's no longer shown.
-  useEffect(() => {
-    setActiveIndex(0)
-  }, [query])
-
-  // Continuously cycle the pointer through the visible services.
-  useEffect(() => {
-    if (filteredServices.length < 2) return
-    const id = setInterval(() => {
-      setActiveIndex(i => (i + 1) % filteredServices.length)
-    }, POINTER_INTERVAL_MS)
-    return () => clearInterval(id)
-  }, [filteredServices.length])
-
-  // Measure the highlighted item's position so the pointer can smoothly
-  // glide to it. Re-measures on resize too, since the grid can reflow.
-  useLayoutEffect(() => {
-    const measure = () => {
-      const el = itemRefs.current[activeIndex]
-      if (!el) { setPointerPos(null); return }
-      setPointerPos({ top: el.offsetTop, left: el.offsetLeft, height: el.offsetHeight })
-    }
-    measure()
-    window.addEventListener('resize', measure)
-    return () => window.removeEventListener('resize', measure)
-  }, [activeIndex, filteredServices.length])
-
-  // Colors are matched to each service by its position in the FULL list
-  // (not the filtered one), so a given service keeps the same color
-  // whether or not a search query is narrowing the results.
-  const colorByTo = ALL_HOME_SERVICES.reduce((map, { to }, i) => {
-    map[to] = SERVICE_COLORS[i % SERVICE_COLORS.length]
-    return map
-  }, {})
-
   return (
-    <div className="page-enter bg-theme-primary min-h-full flex flex-col items-center px-4 py-10">
-      <section className="w-full max-w-xl">
-
-        {/* Top actions */}
-        <div className="flex items-center justify-between mb-10 gap-3">
-          <Link
-            to="/associate-resources"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-all hover:brightness-110"
-            style={{ backgroundColor: '#2563EB' }}
-          >
-            <Users size={16} />
-            Associate Resources
-          </Link>
-
-          <Link
-            to='/admin/login'
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110"
-            style={{ backgroundColor: '#0F766E' }}
-          >
-            <ShieldCheck size={16} />
-            Admin Login
-          </Link>
-        </div>
-
-        {/* Associate Portal */}
-        <div
-          className="rounded-2xl p-5 mb-6 text-white"
-          style={{ backgroundColor: '#4F46E5' }}
-        >
-          <p className="font-bold text-sm mb-1">Associate Portal</p>
-          <p className="text-white/80 text-xs mb-4">
-            Register as associate to manage your leads, track their progress, and grow your business with us.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-2.5">
+    <div className="page-enter bg-theme-primary min-h-full flex flex-col">
+      {/* Top bar */}
+      <header className="text-white" >
+        <div className="max-w-3xl mx-auto px-2 py-3">
+          <div className="grid grid-cols-2 gap-2.5">
             <Link
               to="/associate/register"
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white transition-all hover:brightness-110"
-              style={{ backgroundColor: '#059669' }}
+              className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-white bg-white/15 border border-white/30 transition-all hover:bg-white/25"
             >
-              <UserPlus size={16} />
+              <UserPlus size={15} />
               Associate Registration
             </Link>
             <Link
               to="/associate/login"
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-all hover:brightness-110"
-              style={{ backgroundColor: '#1D4ED8' }}
+              className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-white bg-white/15 border border-white/30 transition-all hover:bg-white/25"
             >
-              <LogIn size={16} />
+              <LogIn size={15} />
               Associate Login
+            </Link>
+            <Link
+              to="/associate-resources"
+              className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-white bg-white/15 border border-white/30 transition-all hover:bg-white/25"
+            >
+              <Users size={15} />
+              Associate Resources
+            </Link>
+            <Link
+              to="/admin/login"
+              className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium text-white bg-white/15 border border-white/30 transition-all hover:bg-white/25"
+            >
+              <ShieldCheck size={15} />
+              Admin Login
             </Link>
           </div>
         </div>
+      </header>
 
-        {/* Search */}
-        <div className="relative mb-6">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-theme-muted"
-          />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search services..."
-            className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-transparent border border-theme text-theme-primary text-sm placeholder:text-theme-muted focus:outline-none focus:border-[#2563EB] transition-colors"
-          />
+      {/* Services */}
+      <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:py-10">
+        <div className="flex flex-row flex-wrap gap-6">
+          {SERVICE_CARDS.map(({ to, image, tag, title, desc }) => (
+            <Link
+              key={to}
+              to={to}
+              className="group relative flex-1 min-w-[280px] rounded-2xl overflow-hidden min-h-[200px] flex flex-col justify-end shadow-md hover:shadow-xl transition-all duration-300"
+            >
+              <img
+                src={image}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div
+                className="absolute inset-0"
+                style={{ background: 'linear-gradient(180deg, rgba(37,99,235,0.10) 0%, rgba(15,23,42,0.55) 55%, rgba(15,23,42,0.92) 100%)' }}
+              />
+              <div className="relative p-5 text-white">
+                <span
+                  className="inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full mb-2"
+                  style={{ backgroundColor: BLUE }}
+                >
+                  {tag}
+                </span>
+                <h3 className="text-lg font-bold mb-1">{title}</h3>
+                <p className="text-xs text-white/85 leading-relaxed mb-3">{desc}</p>
+              </div>
+            </Link>
+          ))}
         </div>
-
-        {/* Services list - two columns, each tile its own color */}
-        {filteredServices.length > 0 ? (
-          <ul ref={listRef} className="relative grid grid-cols-2 gap-2.5">
-            {pointerPos && (
-              <span
-                aria-hidden="true"
-                className="services-pointer absolute text-base leading-none select-none pointer-events-none transition-all duration-700 ease-in-out z-10"
-                style={{
-                  top: pointerPos.top + pointerPos.height / 2 - 9,
-                  left: Math.max(pointerPos.left - 20, -18),
-                }}
-              >
-                👆
-              </span>
-            )}
-            {filteredServices.map(({ to, label }, i) => {
-              const isActive = i === activeIndex
-              return (
-                <li key={to} ref={el => (itemRefs.current[i] = el)} className="min-w-0">
-                  <Link
-                    to={to}
-                    className={`whitespace-pre-line flex items-start gap-2 py-2.5 px-3 rounded-lg text-sm text-white min-w-0 transition-all duration-500 ${
-                      isActive ? 'ring-2 ring-white/80 scale-[1.02]' : ''
-                    }`}
-                    style={{ backgroundColor: colorByTo[to] }}
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-white/90 shrink-0 mt-1.5" />
-                    <span className="break-words">{label}</span>
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
-        ) : (
-          <p className="text-theme-muted text-sm text-center py-4">No services found.</p>
-        )}
-      </section>
+      </main>
     </div>
   )
 }
