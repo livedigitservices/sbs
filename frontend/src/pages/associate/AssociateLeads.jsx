@@ -1,234 +1,201 @@
-import React, { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, X, Phone, Mail, User } from 'lucide-react'
+import React, { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { Plus, Edit, Trash2, X, Search, ChevronLeft, ChevronRight, Eye } from 'lucide-react'
 import { associateApi } from '../../api'
 import toast from 'react-hot-toast'
 
-// Associate Portal — Tutor management. Mirrors the Admin panel's tutor
-// listing manager exactly (same fields, same save/delete flow), just
-// authenticated as an associate instead of an admin.
-const EMPTY = { name: '', subjects: '', levels: '', languages: '', profileInfo: '', contactPhone: '', contactEmail: '', isActive: true, order: 0 }
-
-const toCsv = (arr) => (arr || []).join(', ')
+const EMPTY = { clientName: '', mobile: '', leadFor: '', status: 'new' }
+const STATUS_LABEL = { new: 'New', in_progress: 'In Progress', converted: 'Converted', rejected: 'Rejected' }
+const STATUS_COLORS = { new: '#4488FF', in_progress: '#FF8800', converted: '#44DD88', rejected: '#FF4444' }
+const EDITABLE_FIELDS = ['clientName', 'mobile', 'leadFor', 'status']
 
 export default function AssociateLeads() {
-  const [tutors, setTutors] = useState([])
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [leads, setLeads] = useState([])
   const [loading, setLoading] = useState(true)
-  const [modal, setModal] = useState({ open: false, tutor: null })
+  const [totalCount, setTotalCount] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
+
+  const [search, setSearch] = useState('')
+  const [sortBy, setSortBy] = useState('createdAt')
+  const [sortDir, setSortDir] = useState('desc')
+  const [page, setPage] = useState(1)
+  const [limit] = useState(10)
+
+  const [modal, setModal] = useState({ open: searchParams.get('new') === '1', lead: null })
+  const [viewLead, setViewLead] = useState(null)
   const [form, setForm] = useState(EMPTY)
   const [saving, setSaving] = useState(false)
 
-  const load = () => {
+  const load = useCallback(() => {
     setLoading(true)
-    associateApi.get('/tutors/all')
-      .then(r => setTutors(r.data))
-      .catch(() => toast.error('Failed to load tutors'))
-      .finally(() => setLoading(false))
-  }
-  useEffect(load, [])
+    const params = { page, limit, sortBy, sortDir }
+    if (search.trim()) params.search = search.trim()
 
-  const openAdd = () => { setForm(EMPTY); setModal({ open: true, tutor: null }) }
-  const openEdit = (tutor) => {
-    setForm({
-      name: tutor.name || '',
-      subjects: toCsv(tutor.subjects),
-      levels: toCsv(tutor.levels),
-      languages: toCsv(tutor.languages),
-      profileInfo: tutor.profileInfo || '',
-      contactPhone: tutor.contactPhone || '',
-      contactEmail: tutor.contactEmail || '',
-      isActive: tutor.isActive,
-      order: tutor.order || 0,
-    })
-    setModal({ open: true, tutor })
-  }
-  const closeModal = () => setModal({ open: false, tutor: null })
+    associateApi.get('/associate/leads', { params })
+      .then(r => {
+        setLeads(r.data.leads)
+        setTotalCount(r.data.totalCount)
+        setTotalPages(r.data.totalPages)
+      })
+      .catch(() => toast.error('Failed to load leads'))
+      .finally(() => setLoading(false))
+  }, [page, limit, sortBy, sortDir, search])
+
+  useEffect(load, [load])
+
+  // Reset to page 1 whenever the search changes
+  useEffect(() => { setPage(1) }, [search])
+
+  const openAdd = () => { setForm(EMPTY); setModal({ open: true, lead: null }) }
+  const openEdit = (lead) => { setForm({ ...lead }); setModal({ open: true, lead }) }
+  const closeModal = () => { setModal({ open: false, lead: null }); if (searchParams.get('new')) setSearchParams({}) }
 
   const handleSave = async (e) => {
     e.preventDefault()
-    if (!form.name.trim()) return toast.error('Please enter a name')
-    if (!form.contactPhone.trim() && !form.contactEmail.trim()) {
-      return toast.error('Add at least a phone number or an email so visitors can get in touch')
-    }
-
     setSaving(true)
     try {
-      const payload = {
-        name: form.name,
-        imageUrl: modal.tutor?.imageUrl || '',
-        subjects: form.subjects,
-        levels: form.levels,
-        languages: form.languages,
-        profileInfo: form.profileInfo,
-        contactPhone: form.contactPhone,
-        contactEmail: form.contactEmail,
-        isActive: form.isActive,
-        order: Number(form.order) || 0,
-      }
-
-      if (modal.tutor) await associateApi.put(`/tutors/${modal.tutor._id}`, payload)
-      else await associateApi.post('/tutors', payload)
-      toast.success(modal.tutor ? 'Tutor updated' : 'Tutor added')
+      const payload = {}
+      EDITABLE_FIELDS.forEach(k => { payload[k] = form[k] ?? '' })
+      if (modal.lead) await associateApi.put(`/associate/leads/${modal.lead._id}`, payload)
+      else await associateApi.post('/associate/leads', payload)
+      toast.success(modal.lead ? 'Lead updated' : 'Lead added')
       closeModal()
       load()
     } catch (err) {
-      toast.error(err?.response?.data?.message || err.message || 'Failed to save')
-    } finally {
-      setSaving(false)
-    }
+      toast.error(err?.response?.data?.message || 'Failed to save lead')
+    } finally { setSaving(false) }
   }
 
   const handleDelete = async (id) => {
-    if (!confirm('Remove this tutor listing?')) return
+    if (!confirm('Delete this lead? This cannot be undone.')) return
     try {
-      await associateApi.delete(`/tutors/${id}`)
-      toast.success('Tutor removed')
+      await associateApi.delete(`/associate/leads/${id}`)
+      toast.success('Lead deleted')
       load()
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Failed to delete')
+      toast.error(err?.response?.data?.message || 'Failed to delete lead')
     }
   }
 
-  const inputClass = "w-full input-bg border border-theme rounded-xl px-4 py-3 text-theme-primary text-sm placeholder-[var(--text-muted)] focus:border-[#FFD700]/60"
-  const labelClass = "text-theme-muted text-xs font-semibold uppercase tracking-wide mb-1.5 block"
+  const toggleSort = (field) => {
+    if (sortBy === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortBy(field); setSortDir('asc') }
+  }
+
+  const inputClass = "w-full input-bg border border-theme rounded-xl px-4 py-3 text-theme-primary text-sm placeholder-theme-muted focus:border-[#FFD700]/60"
 
   return (
-    <div >
+    <div>
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <div>
-          <h1 className="text-theme-primary font-black text-2xl">Add Tutors</h1>
-          {/* <p className="text-theme-secondary text-sm">{tutors.length} listing{tutors.length === 1 ? '' : 's'}</p> */}
+          <h1 className="text-theme-primary font-black text-2xl">My Leads</h1>
         </div>
         <button onClick={openAdd}
-          className="flex items-center gap-2 bg-[#FFD700] text-[#0A0A0A] font-bold px-4 py-2.5 rounded-xl hover:bg-[#E6C200] transition text-sm">
-          <Plus size={16} /> Add Tutor
+          className="flex items-center gap-2 bg-[#2563EB] text-[#f2f0f0] font-bold px-4 py-2.5 rounded-xl hover:bg-[#185bed] transition text-sm">
+          <Plus size={16} /> Add Lead
         </button>
       </div>
 
-      {/* {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="bg-theme-card border border-theme rounded-2xl h-56 animate-pulse" />
-          ))}
+      {/* Search */}
+      <div className="flex flex-wrap gap-3 mb-4">
+        <div className="relative flex-1 min-w-[220px]">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-theme-muted" />
+          <input type="text" placeholder="Search by name, mobile, or lead " value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full input-bg border border-theme rounded-xl pl-10 pr-4 py-2.5 text-theme-primary text-sm placeholder-theme-muted focus:border-[#FFD700]/60" />
         </div>
-      ) : tutors.length === 0 ? (
-        <div className="bg-theme-card border border-dashed border-theme rounded-2xl p-5 text-theme-muted text-xs">
-          No tutors yet. Click "Add Tutor" to publish the first one.
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {tutors.map(t => (
-            <div key={t._id} className="bg-theme-card border border-theme rounded-2xl overflow-hidden flex flex-col">
-              <div className="relative h-32 sm:h-36 bg-black/20 overflow-hidden">
-                {t.imageUrl ? (
-                  <img src={t.imageUrl} alt={t.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center gap-1 bg-theme-tertiary">
-                    <User size={28} className="text-theme-muted" />
-                    <span className="text-theme-muted text-[9px]">No Photo</span>
-                  </div>
-                )}
-                <span className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${t.isActive ? 'bg-[#44DD88]/90 text-[#0A0A0A]' : 'bg-red-500/90 text-white'}`}>
-                  {t.isActive ? 'Active' : 'Hidden'}
-                </span>
-              </div>
-              <div className="p-2.5 flex flex-col gap-1 flex-1">
-                <p className="text-theme-primary font-semibold text-xs line-clamp-1">{t.name}</p>
-                {t.subjects?.length > 0 && (
-                  <p className="text-theme-muted text-[10px] line-clamp-1">Subjects: {toCsv(t.subjects)}</p>
-                )}
-                {t.levels?.length > 0 && (
-                  <p className="text-theme-muted text-[10px] line-clamp-1">Levels: {toCsv(t.levels)}</p>
-                )}
-                {t.languages?.length > 0 && (
-                  <p className="text-theme-muted text-[10px] line-clamp-1">Languages: {toCsv(t.languages)}</p>
-                )}
-                <div className="flex gap-1 mt-auto pt-1.5">
-                  <button onClick={() => openEdit(t)} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-theme-tertiary hover:bg-[#FFD700]/10 hover:text-[#FFD700] text-theme-muted transition text-[11px]">
-                    <Edit size={12} /> Edit
-                  </button>
-                  <button onClick={() => handleDelete(t._id)} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-theme-tertiary hover:bg-red-500/10 hover:text-red-400 text-theme-muted transition text-[11px]">
-                    <Trash2 size={12} /> Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )} */}
+      </div>
 
+      {/* Table */}
+      <div className="bg-theme-card border border-theme rounded-2xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-theme">
+                {[
+                  { key: null, label: 'S.No' },
+                  { key: 'clientName', label: 'Name' },
+                  { key: null, label: 'Mobile Number' },
+                  { key: null, label: 'Lead For' },
+                  { key: null, label: 'Delete' },
+                ].map(({ key, label }) => (
+                  <th key={label} className="text-left px-5 py-3 text-theme-muted font-medium text-xs whitespace-nowrap">
+                    {key ? (
+                      <button onClick={() => toggleSort(key)} className="flex items-center gap-1 hover:text-theme-primary transition">
+                        {label} {sortBy === key && (sortDir === 'asc' ? '↑' : '↓')}
+                      </button>
+                    ) : label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                [...Array(5)].map((_, i) => (
+                  <tr key={i} className="border-b border-theme">
+                    {[...Array(5)].map((_, j) => <td key={j} className="px-5 py-4"><div className="h-3 bg-theme-tertiary rounded animate-pulse" /></td>)}
+                  </tr>
+                ))
+              ) : leads.map((lead, idx) => (
+                <tr key={lead._id} className="border-b border-theme hover:bg-theme-tertiary transition">
+                  <td className="px-5 py-3 text-theme-muted whitespace-nowrap">{(page - 1) * limit + idx + 1}</td>
+                  <td className="px-5 py-3 text-theme-primary font-medium whitespace-nowrap">{lead.clientName}</td>
+                  <td className="px-5 py-3 text-theme-secondary whitespace-nowrap">{lead.mobile}</td>
+                  <td className="px-5 py-3 text-theme-secondary max-w-[200px] truncate">{lead.leadFor}</td>
+                  <td className="px-5 py-3">
+                    <div className="flex gap-2">
+                      <button onClick={() => handleDelete(lead._id)} className="p-1.5 rounded-lg bg-theme-tertiary hover:bg-red-500/10 hover:text-red-400 text-theme-muted transition">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {!loading && !leads.length && <div className="p-10 text-center text-theme-muted">No leads found. Click "Add Lead" to start.</div>}
+        </div>
+
+        {/* Pagination */}
+        {!loading && totalPages > 1 && (
+          <div className="flex items-center justify-between px-5 py-3 border-t border-theme">
+            <p className="text-theme-muted text-xs">Page {page} of {totalPages}</p>
+            <div className="flex gap-2">
+              <button onClick={() => setPage(p => Math.max(p - 1, 1))} disabled={page <= 1}
+                className="p-1.5 rounded-lg bg-theme-tertiary text-theme-secondary hover:text-theme-primary transition disabled:opacity-40">
+                <ChevronLeft size={15} />
+              </button>
+              <button onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page >= totalPages}
+                className="p-1.5 rounded-lg bg-theme-tertiary text-theme-secondary hover:text-theme-primary transition disabled:opacity-40">
+                <ChevronRight size={15} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Add/Edit Modal */}
       {modal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-theme-secondary border border-theme rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto my-8">
-            <div className="flex items-center justify-between p-5 border-b border-theme sticky top-0 bg-theme-secondary">
-              <h3 className="text-theme-primary font-bold">{modal.tutor ? 'Edit Tutor' : 'Add New Tutor'}</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-theme-secondary border border-theme rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-5 border-b border-theme">
+              <h3 className="text-theme-primary font-bold">{modal.lead ? 'Edit Lead' : 'Add New Lead'}</h3>
               <button onClick={closeModal} className="text-theme-muted hover:text-theme-primary p-1"><X size={18} /></button>
             </div>
             <form onSubmit={handleSave} className="p-5 space-y-4">
-              <div>
-                <label className={labelClass}>Name</label>
-                <input type="text" placeholder="e.g. Priya Sharma" value={form.name}
-                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  className={inputClass} />
-              </div>
-
-              <div>
-                <label className={labelClass}>Subject/s</label>
-                <input type="text" placeholder="e.g. Maths, Physics, Spoken English" value={form.subjects}
-                  onChange={e => setForm(f => ({ ...f, subjects: e.target.value }))}
-                  className={inputClass} />
-                <p className="text-theme-muted text-[11px] mt-1">Comma-separated. Shown as filter options on the public page.</p>
-              </div>
-
-              <div>
-                <label className={labelClass}>Level/s</label>
-                <input type="text" placeholder="e.g. Beginner, School, Undergraduate" value={form.levels}
-                  onChange={e => setForm(f => ({ ...f, levels: e.target.value }))}
-                  className={inputClass} />
-              </div>
-
-              <div>
-                <label className={labelClass}>Language/s</label>
-                <input type="text" placeholder="e.g. English, Hindi, Telugu" value={form.languages}
-                  onChange={e => setForm(f => ({ ...f, languages: e.target.value }))}
-                  className={inputClass} />
-              </div>
-
-              <div>
-                <label className={labelClass}>Profile / More Info</label>
-                <textarea rows={3} placeholder="Short bio, experience, qualifications..." value={form.profileInfo}
-                  onChange={e => setForm(f => ({ ...f, profileInfo: e.target.value }))}
-                  className={inputClass} />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className={labelClass}><Phone size={11} className="inline mr-1 -mt-0.5" />Contact Phone</label>
-                  <input type="text" placeholder="e.g. +91 98765 43210" value={form.contactPhone}
-                    onChange={e => setForm(f => ({ ...f, contactPhone: e.target.value }))}
-                    className={inputClass} />
+              {[
+                { key: 'clientName', label: 'Name', placeholder: 'e.g. Ramesh Kumar', required: true },
+                { key: 'mobile', label: 'Mobile Number', placeholder: 'e.g. 9876543210', required: true },
+                { key: 'leadFor', label: 'Lead For', placeholder: 'e.g. Business Loan, Hotel Management', required: true },
+              ].map(({ key, label, placeholder, required }) => (
+                <div key={key}>
+                  <label className="text-theme-muted text-xs font-semibold uppercase tracking-wide mb-1.5 block">{label}</label>
+                  <input type="text" placeholder={placeholder} value={form[key] ?? ''}
+                    onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                    className={inputClass} required={required} />
                 </div>
-                <div>
-                  <label className={labelClass}><Mail size={11} className="inline mr-1 -mt-0.5" />Contact Email</label>
-                  <input type="email" placeholder="e.g. priya@example.com" value={form.contactEmail}
-                    onChange={e => setForm(f => ({ ...f, contactEmail: e.target.value }))}
-                    className={inputClass} />
-                </div>
-              </div>
-
-              <div>
-                <label className={labelClass}>Display Order</label>
-                <input type="number" value={form.order}
-                  onChange={e => setForm(f => ({ ...f, order: e.target.value }))}
-                  className={inputClass} />
-                <p className="text-theme-muted text-[11px] mt-1">Lower numbers show first. Leave as 0 for default (newest first).</p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input type="checkbox" id="isActive" checked={form.isActive}
-                  onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))}
-                  className="w-4 h-4 accent-[#FFD700]" />
-                <label htmlFor="isActive" className="text-theme-secondary text-sm">Published (visible to site visitors)</label>
-              </div>
+              ))}
 
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={closeModal}
@@ -236,11 +203,35 @@ export default function AssociateLeads() {
                   Cancel
                 </button>
                 <button type="submit" disabled={saving}
-                  className="flex-1 py-3 rounded-xl bg-[#FFD700] text-[#0A0A0A] font-bold hover:bg-[#E6C200] transition text-sm disabled:opacity-70">
-                  {saving ? 'Saving...' : modal.tutor ? 'Update Tutor' : 'Add Tutor'}
+                  className="flex-1 py-3 rounded-xl bg-[#2563EB] text-[#fdfdfd] font-bold hover:bg-[#1155e8] transition text-sm disabled:opacity-70">
+                  {saving ? 'Saving...' : modal.lead ? 'Update Lead' : 'Add Lead'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Modal */}
+      {viewLead && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-theme-secondary border border-theme rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-5 border-b border-theme">
+              <h3 className="text-theme-primary font-bold">Lead Details</h3>
+              <button onClick={() => setViewLead(null)} className="text-theme-muted hover:text-theme-primary p-1"><X size={18} /></button>
+            </div>
+            <div className="p-5 space-y-3 text-sm">
+              {[
+                ['Name', viewLead.clientName], ['Mobile Number', viewLead.mobile], ['Lead For', viewLead.leadFor],
+                // ['Status', STATUS_LABEL[viewLead.status]],
+                ['Created', new Date(viewLead.createdAt).toLocaleString()],
+              ].map(([label, value]) => (
+                <div key={label} className="flex justify-between gap-4 border-b border-theme pb-2">
+                  <span className="text-theme-muted">{label}</span>
+                  <span className="text-theme-primary text-right">{value}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

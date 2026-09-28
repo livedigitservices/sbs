@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from 'react-router-dom'
 import PublicLayout from './components/PublicLayout'
 import AdminLayout from './components/admin/AdminLayout'
@@ -23,6 +22,7 @@ import AdminAssociates from './pages/admin/AdminAssociates'
 import AssociateLogin from './pages/associate/AssociateLogin'
 import AssociateRegister from './pages/associate/AssociateRegister'
 import AssociateLeads from './pages/associate/AssociateLeads'
+import AssociateTutors from './pages/associate/AssociateTutors'
 import AdminFreelancePosters from './pages/admin/AdminFreelancePosters'
 import Tutors from './pages/public/Tutors'
 import AdminTutors from './pages/admin/AdminTutors'
@@ -44,6 +44,8 @@ export default function App() {
 
         {/* Associate protected — same navbar/footer chrome as the rest of the public site */}
         <Route path="/associate" element={<AssociateRoute><AssociateLayout /></AssociateRoute>}>
+          <Route index element={<Navigate to="tutors" replace />} />
+          <Route path="tutors" element={<AssociateTutors />} />
           <Route path="leads" element={<AssociateLeads />} />
         </Route>
       </Route>

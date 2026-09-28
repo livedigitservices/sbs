@@ -4,8 +4,6 @@ import { LayoutDashboard, QrCode, Settings, LogOut, Menu, X, ChevronRight, Sun, 
 const NAV = [
   { to: '/admin',                  label: 'Dashboard',      icon: LayoutDashboard, exact: true },
   { to: '/admin/resources',        label: 'Assoc. Resources', icon: Users },
-  { to: '/admin/visa-posters',     label: 'Visa Posters',   icon: Plane },
-  { to: '/admin/freelance-posters', label: 'Freelance Posters', icon: Briefcase },
   { to: '/admin/tutors',           label: 'Tutors/Mentors', icon: GraduationCap },
   { to: '/admin/associates',       label: 'Associates',     icon: Users2 },
   { to: '/admin/contacts',         label: 'Contacts',       icon: Phone },
@@ -43,8 +41,8 @@ export default function AdminLayout() {
     <div className="flex flex-col h-full bg-theme-secondary border-r border-theme">
       {/* Header */}
       <div className="p-5 border-b border-theme flex items-center justify-between">
-        <Link to="/" onClick={() => mobile && setMobileOpen(false)} className="hover:opacity-80 transition">
-          <div className="bg-[#FFD700] text-[#0A0A0A] font-black text-base px-3 py-1 rounded-lg inline-block">SBS</div>
+        <Link to="" onClick={() => mobile && setMobileOpen(false)} className="hover:opacity-80 transition">
+          <div className="bg-[#2563EB] text-[#fdfcfc] font-black text-base px-3 py-1 rounded-lg inline-block">SBS</div>
           <p className="text-theme-muted text-xs mt-1">Admin Portal</p>
         </Link>
         {mobile && (
@@ -60,7 +58,7 @@ export default function AdminLayout() {
             <Link key={to} to={to}
               onClick={() => mobile && setMobileOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group
-                ${active ? 'bg-[#FFD700] text-[#0A0A0A]' : 'text-theme-secondary hover:bg-theme-tertiary hover:text-theme-primary'}`}>
+                ${active ? 'bg-[#2563EB] text-[#f5f4f4]' : 'text-theme-secondary hover:bg-theme-tertiary hover:text-theme-primary'}`}>
               <Icon size={16} />
               <span className="flex-1">{label}</span>
               {active && <ChevronRight size={14} />}
@@ -114,7 +112,7 @@ export default function AdminLayout() {
         {/* Mobile topbar */}
         <div className="md:hidden flex items-center gap-3 p-4 border-b border-theme bg-theme-secondary">
           <button onClick={() => setMobileOpen(true)} className="text-theme-secondary hover:text-theme-primary p-1"><Menu size={20} /></button>
-          <Link to="/" className="bg-[#FFD700] text-[#0A0A0A] font-black text-sm px-2.5 py-0.5 rounded-lg">SBS Admin</Link>
+          <Link to="" className="bg-[#2563EB] text-[#f0efef] font-black text-sm px-2.5 py-0.5 rounded-lg">SBS Admin</Link>
           <div className="ml-auto">
             <button onClick={toggleDark} className="text-theme-secondary hover:text-[#FFD700] p-1.5 rounded-lg hover:bg-theme-tertiary transition">
               {dark ? <Sun size={17} /> : <Moon size={17} />}

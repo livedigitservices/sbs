@@ -227,7 +227,7 @@ export default function OnlineDegrees() {
         <p className="font-bold mb-6 text-[#3B0808] dark:text-white">{courseCodes.join(' | ')}</p>
 
         <div className="flex flex-wrap gap-3 justify-center mb-10">
-          <RedButton onClick={() => openEnquiry('Online Courses — Explore')}>Explore Courses</RedButton>
+          <RedButton onClick={() => navigate('/contact')}>Explore Courses</RedButton>
           <RedButton onClick={() => navigate('/contact')}>Apply Now</RedButton>
         </div>
 

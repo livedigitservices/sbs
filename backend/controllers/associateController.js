@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Associate = require('../models/Associate');
+const Lead = require('../models/Lead');
 
 const MOBILE_REGEX = /^[6-9]\d{9}$/; // Indian mobile number format
 
@@ -105,7 +106,18 @@ exports.getProfile = async (req, res) => {
 
 exports.getDashboardStats = async (req, res) => {
   try {
-    res.json({ total: 0, new: 0, inProgress: 0, converted: 0, rejected: 0, recentLeads: [] });
+    const associateFilter = { associate: req.associate.id };
+
+    const [total, newCount, inProgress, converted, rejected, recentLeads] = await Promise.all([
+      Lead.countDocuments(associateFilter),
+      Lead.countDocuments({ ...associateFilter, status: 'new' }),
+      Lead.countDocuments({ ...associateFilter, status: 'in_progress' }),
+      Lead.countDocuments({ ...associateFilter, status: 'converted' }),
+      Lead.countDocuments({ ...associateFilter, status: 'rejected' }),
+      Lead.find(associateFilter).sort({ createdAt: -1 }).limit(8),
+    ]);
+
+    res.json({ total, new: newCount, inProgress, converted, rejected, recentLeads });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

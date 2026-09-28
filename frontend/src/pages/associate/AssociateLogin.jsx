@@ -17,7 +17,7 @@ export default function AssociateLogin() {
       localStorage.setItem('sbs_associate_token', res.data.token)
       localStorage.setItem('sbs_associate', JSON.stringify(res.data.associate))
       toast.success(`Welcome back, ${res.data.associate.name}!`)
-      navigate('/associate/leads', { replace: true })
+      navigate('/associate/tutors', { replace: true })
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Invalid credentials')
     } finally { setLoading(false) }
@@ -29,14 +29,6 @@ export default function AssociateLogin() {
       style={{ minHeight: 'calc(100vh - 64px - 40px)' }}
     >
       <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#FFD700]/10 mb-4">
-            <Lock size={20} className="text-[#FFD700]" />
-          </div>
-          <h1 className="text-theme-primary font-bold text-2xl">Associate Login</h1>
-          <p className="text-theme-secondary text-sm mt-1.5">Sign in to manage your leads</p>
-        </div>
-
         <div className="bg-theme-card border border-theme rounded-2xl p-6 sm:p-7 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -83,7 +75,7 @@ export default function AssociateLogin() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-[#FFD700] text-[#0A0A0A] font-bold py-3.5 rounded-xl hover:bg-[#E6C200] transition mt-2 disabled:opacity-70"
+              className="w-full flex items-center justify-center gap-2 bg-[#2563EB] text-[#faf7f7] font-bold py-3.5 rounded-xl hover:bg-[#195ae6] transition mt-2 disabled:opacity-70"
             >
               {loading ? 'Signing in…' : (<>Sign In <ArrowRight size={16} /></>)}
             </button>
@@ -95,7 +87,7 @@ export default function AssociateLogin() {
         </div>
 
         <p className="text-center mt-5 text-theme-secondary text-xs">
-          New associate? <Link to="/associate/register" className="text-[#FFD700] font-semibold hover:underline">Register here</Link>
+          New associate? <Link to="/associate/register" className="text-[#2563EB] font-semibold hover:underline">Register here</Link>
         </p>
       </div>
     </div>

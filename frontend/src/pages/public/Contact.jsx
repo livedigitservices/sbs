@@ -3,7 +3,7 @@ import { Phone, MapPin, Store } from 'lucide-react'
 import api from '../../api'
 
 const STATE_COLORS = ['#4488FF', '#FF4444', '#44DD88', '#FFD700', '#FF88AA', '#AA88FF']
-const FRANCHISE_COLOR = '#FFD700'
+const FRANCHISE_COLOR = '#2563EB'
 
 // Keeps only digits and a leading "+" so tel: links are always well-formed,
 // even if a number was pasted into the Admin panel with spaces, dashes,

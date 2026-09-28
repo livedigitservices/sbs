@@ -8,7 +8,7 @@ import api from '../../api'
    pages (Ice Cream Parlour, Imports & Exports, Bio-CNG, Agri Investments).
    PAGE_BG is a gradient (not a flat near-black navy) so the page reads as
    clearly blue rather than blending into the site's black header/nav. */
-const PAGE_BG = 'linear-gradient(180deg, #1E63B8 0%, #123A7A 45%, #0A1E3F 100%)'
+const PAGE_BG = '#FFFFFF'
 const NAVY = '#0a1e3f'
 const CARD = '#173a72'
 const BLUE = '#1e3a8a'
@@ -66,12 +66,19 @@ export default function TutorDirectory() {
   }, [contactTutor])
 
   const hasActiveFilters = appliedFilters.subject || appliedFilters.level || appliedFilters.language
-  const selectClass = "w-full px-3 py-2.5 rounded-lg bg-transparent text-sm focus:outline-none transition-colors"
-  const selectStyle = { color: '#fff', border: '1px solid rgba(244,197,66,0.35)' }
-  // Native <option> lists always render on a plain white/system background
-  // regardless of our theme, so force dark text here — otherwise light
-  // option text becomes unreadable against that white background.
-  const optionStyle = { color: '#111111', backgroundColor: '#FFFFFF' }
+ const selectClass =
+  "w-full px-3 py-2.5 rounded-lg bg-white text-sm focus:outline-none transition-colors"
+
+const selectStyle = {
+  color: '#000000',
+  backgroundColor: '#FFFFFF',
+  border: '1px solid rgba(244,197,66,0.35)'
+}
+
+const optionStyle = {
+  color: '#000000',
+  backgroundColor: '#FFFFFF'
+}
 
   const waLink = useMemo(() => {
     if (!contactTutor?.contactPhone) return null
@@ -126,7 +133,7 @@ export default function TutorDirectory() {
       <div className="max-w-6xl mx-auto px-4 py-8">
             <div className="bg-red-600/10 border border-red-600/30 rounded-xl px-4 py-3 mb-6">
         <p className="text-red-500 text-xs font-bold uppercase tracking-wide mb-1.5">Note</p>
-        <ul className="text-white text-xs sm:text-sm font-semibold leading-snug list-disc pl-4 space-y-1">
+        <ul className="text-black text-xs sm:text-sm font-semibold leading-snug list-disc pl-4 space-y-1">
           <li>Ask for a free demo</li>
           <li>Pay after classes</li>
           <li>Only classes — no other things</li>
@@ -134,8 +141,8 @@ export default function TutorDirectory() {
       </div>
         {/* Search + filters */}
         <div
-          className="rounded-2xl p-4 mb-6 space-y-3"
-          style={{ border: `1.5px solid rgba(244,197,66,0.35)`, backgroundColor: 'rgba(244,197,66,0.06)' }}
+          className="rounded-2xl p-4 mb-6 space-y-3 text-black"
+          
         >
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <select value={subject} onChange={e => setSubject(e.target.value)} className={selectClass} style={selectStyle}>

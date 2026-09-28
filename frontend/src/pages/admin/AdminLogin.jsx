@@ -25,14 +25,6 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen bg-theme-primary flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-block hover:opacity-80 transition">
-            <div className="bg-[#FFD700] text-[#0A0A0A] font-black text-2xl px-5 py-2 rounded-xl inline-block mb-3">SBS</div>
-          </Link>
-          <h1 className="text-theme-primary font-bold text-xl">Admin Portal</h1>
-          <p className="text-theme-secondary text-sm mt-1">Sign in to manage your platform</p>
-        </div>
-
         <div className="bg-theme-card border border-theme rounded-2xl p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -58,7 +50,7 @@ export default function AdminLogin() {
               </div>
             </div>
             <button type="submit" disabled={loading}
-              className="w-full bg-[#FFD700] text-[#0A0A0A] font-bold py-3.5 rounded-xl hover:bg-[#E6C200] transition mt-2 disabled:opacity-70">
+              className="w-full bg-[#2563EB] text-[#f4f3f3] font-bold py-3.5 rounded-xl hover:bg-[#2056ca] transition mt-2 disabled:opacity-70">
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>

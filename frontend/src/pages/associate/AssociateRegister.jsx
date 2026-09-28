@@ -82,13 +82,13 @@ export default function AssociateRegister() {
               Your Associate ID and default password will both be your mobile number. You'll be asked to change your password on first login.
             </p>
             <button type="submit" disabled={loading}
-              className="w-full bg-[#FFD700] text-[#0A0A0A] font-bold py-3.5 rounded-xl hover:bg-[#E6C200] transition mt-2 disabled:opacity-70">
+              className="w-full bg-[#2563EB] text-[#f7f6f6] font-bold py-3.5 rounded-xl hover:bg-[#175aeb] transition mt-2 disabled:opacity-70">
               {loading ? 'Registering...' : 'Register'}
             </button>
           </form>
         </div>
         <p className="text-center mt-4 text-theme-secondary text-xs">
-          Already registered? <Link to="/associate/login" className="text-[#FFD700] hover:underline">Sign in</Link>
+          Already registered? <Link to="/associate/login" className="text-[#2563EB] hover:underline">Sign in</Link>
         </p>
       </div>
     </div>

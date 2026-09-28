@@ -31,6 +31,7 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/qr', require('./routes/qrRoutes'));
 app.use('/api/settings', require('./routes/settingsRoutes'));
 app.use('/api/resources', require('./routes/resourceRoutes'));
+app.use('/api/associate/leads', require('./routes/leadRoutes'));
 app.use('/api/associate', require('./routes/associateRoutes'));
 app.use('/api/posters', require('./routes/posterRoutes'));
 app.use('/api/tutors', require('./routes/tutorRoutes'));

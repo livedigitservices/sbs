@@ -82,7 +82,7 @@ export default function Home() {
 
       {/* Services */}
       <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:py-10">
-        <div className="flex flex-row flex-wrap gap-4">
+        <div className="flex flex-row flex-wrap gap-2">
           {SERVICE_CARDS.map(({ to, image, tag, title, desc }) => (
             <Link
               key={to}
@@ -95,18 +95,19 @@ export default function Home() {
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div
-                className="absolute inset-0"
+                className="absolute inset-0 "
                 style={{ background: 'linear-gradient(180deg, rgba(37,99,235,0.10) 0%, rgba(15,23,42,0.55) 55%, rgba(15,23,42,0.92) 100%)' }}
               />
-              <div className="relative p-5 text-white">
+              <div className="relative p-5 text-white flex flex-col items-center uppercase">
+                <h3 className="text-3xl font-bold mb-4">{title}</h3>
                 <span
-                  className="inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full mb-2"
+                  className="inline-block text-[15px] font-semibold px-2.5 rounded-full mb-4"
                   style={{ backgroundColor: BLUE }}
                 >
                   {tag}
                 </span>
-                <h3 className="text-lg font-bold mb-1">{title}</h3>
-                <p className="text-xs text-white/85 leading-relaxed mb-3">{desc}</p>
+                
+                <p className="text-[17px] text-white/85 leading-relaxed mb-2">{desc}</p>
               </div>
             </Link>
           ))}
