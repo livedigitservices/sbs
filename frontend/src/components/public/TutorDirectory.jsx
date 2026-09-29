@@ -11,7 +11,7 @@ import api from '../../api'
 const PAGE_BG = '#FFFFFF'
 const NAVY = '#0a1e3f'
 const CARD = '#173a72'
-const BLUE = '#1e3a8a'
+const BLUE = '#2563EB'
 const YELLOW = '#f4c542'
 
 // Public "Find your Online Tutor / Trainer / Teacher / Coach / Mentor /
@@ -162,7 +162,7 @@ const optionStyle = {
             <button
               onClick={handleSearch}
               className="px-5 py-2.5 rounded-lg text-sm font-bold transition hover:opacity-90"
-              style={{ backgroundColor: YELLOW, color: NAVY }}
+              style={{ backgroundColor: BLUE, color: PAGE_BG }}
             >
               Search
             </button>
@@ -170,7 +170,7 @@ const optionStyle = {
               <button
                 onClick={handleClearFilters}
                 className="text-xs hover:underline"
-                style={{ color: YELLOW }}
+                style={{ color: BLUE }}
               >
                 Clear filters
               </button>
@@ -197,39 +197,39 @@ const optionStyle = {
             {tutors.map(t => (
               <div
                 key={t._id}
-                className="rounded-2xl overflow-hidden flex flex-col card-hover"
-                style={{ border: '1.5px solid rgba(255,255,255,0.12)', backgroundColor: CARD }}
+                className="rounded-2xl overflow-hidden flex flex-col card-hover bg-[#2564eb42]"
+                style={{ border: '1.5px solid rgba(255,255,255,0.12)' }}
               >
                 <div className="flex gap-3 p-3">
                   <div className="min-w-0">
-                    <p className="text-white font-bold text-sm truncate">{t.name}</p>
+                    <p className="text-black font-bold text-sm truncate">{t.name}</p>
                     {t.subjects?.length > 0 && (
-                      <p className="text-white/60 text-xs mt-1 line-clamp-2">
-                        <span className="font-semibold" style={{ color: YELLOW }}>Subject/s:</span> {t.subjects.join(', ')}
+                      <p className="text-blacktext-xs mt-1 line-clamp-2">
+                        <span className="font-semibold" style={{ color: BLUE }}>Subject/s:</span> {t.subjects.join(', ')}
                       </p>
                     )}
                   </div>
                 </div>
                 <div className="px-3 pb-3 flex-1 flex flex-col gap-1.5">
                   {t.levels?.length > 0 && (
-                    <p className="text-white/70 text-xs">
-                      <span className="font-semibold" style={{ color: YELLOW }}>Level/s:</span> {t.levels.join(', ')}
+                    <p className="text-black text-xs">
+                      <span className="font-semibold" style={{ color: BLUE }}>Level/s:</span> {t.levels.join(', ')}
                     </p>
                   )}
                   {t.languages?.length > 0 && (
-                    <p className="text-white/70 text-xs">
-                      <span className="font-semibold" style={{ color: YELLOW }}>Language/s:</span> {t.languages.join(', ')}
+                    <p className="text-black text-xs">
+                      <span className="font-semibold" style={{ color: BLUE }}>Language/s:</span> {t.languages.join(', ')}
                     </p>
                   )}
                   {t.profileInfo && (
-                    <p className="text-white/70 text-xs line-clamp-3">
-                      <span className="font-semibold" style={{ color: YELLOW }}>Profile/More Info:</span> {t.profileInfo}
+                    <p className="text-black text-xs line-clamp-3">
+                      <span className="font-semibold" style={{ color: BLUE }}>Profile/More Info:</span> {t.profileInfo}
                     </p>
                   )}
                   <button
                     onClick={() => setContactTutor(t)}
                     className="mt-auto pt-2 w-full py-2 rounded-lg text-xs font-bold transition hover:opacity-90"
-                    style={{ backgroundColor: YELLOW, color: NAVY }}
+                    style={{ backgroundColor: BLUE, color: PAGE_BG }}
                   >
                     CONTACT
                   </button>
@@ -253,7 +253,7 @@ const optionStyle = {
         >
           <div
             className="rounded-2xl w-full max-w-sm"
-            style={{ backgroundColor: CARD, border: '1px solid rgba(255,255,255,0.1)' }}
+            style={{ backgroundColor: BLUE, border: '1px solid rgba(255,255,255,0.1)' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
