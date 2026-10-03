@@ -33,13 +33,13 @@ export default function AssociateLogin() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-theme-secondary text-xs font-semibold uppercase tracking-wide mb-2 block">
-                Associate ID / Mobile Number
+                Associate ID 
               </label>
               <div className="relative">
                 <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-theme-muted" />
                 <input
                   type="text"
-                  placeholder="10-digit mobile number"
+                  placeholder="Enter your ID"
                   value={form.associateId}
                   onChange={e => setForm(f => ({ ...f, associateId: e.target.value }))}
                   className="w-full input-bg border border-theme rounded-xl pl-10 pr-4 py-3 text-theme-primary text-sm placeholder-theme-muted focus:outline-none focus:border-[#FFD700] focus:ring-2 focus:ring-[#FFD700]/20 transition"
@@ -81,7 +81,7 @@ export default function AssociateLogin() {
             </button>
 
             <p className="text-center text-[11px] text-theme-muted pt-1">
-              Use your registered mobile number as your password.
+              Use your registered ID and password.
             </p>
           </form>
         </div>

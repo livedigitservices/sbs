@@ -11,5 +11,5 @@ export const RESOURCE_CATEGORY_LABELS = [
   'Need Extra Income?',
   'Online Degrees',
   'Ph. D Admissions',
-  'Freelancer/WFH',
+  'Print & Display Materials',
 ]
