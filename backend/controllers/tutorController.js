@@ -84,6 +84,8 @@ exports.getTutors = async (req, res) => {
 exports.getAllTutors = async (req, res) => {
   try {
     const query = buildFilterQuery(req.query);
+    // Admin drill-down: ?associate=<id> lists only that associate's tutors.
+    if (req.admin && req.query.associate) query.createdByAssociate = req.query.associate;
     const tutors = await Tutor.find(query).sort({ order: 1, createdAt: -1 });
     res.json(tutors);
   } catch (err) {
@@ -153,6 +155,8 @@ exports.createTutor = async (req, res) => {
       contactEmail: (contactEmail || '').trim(),
       ...(isActive !== undefined ? { isActive } : {}),
       ...(order !== undefined ? { order } : {}),
+      // Never trusted from the request body — taken from the verified token.
+      createdByAssociate: req.associate ? req.associate.id : null,
     });
     res.status(201).json(tutor);
   } catch (err) {

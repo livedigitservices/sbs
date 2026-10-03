@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const Associate = require('../models/Associate');
 const Lead = require('../models/Lead');
+const Tutor = require('../models/Tutor');
 
 exports.login = async (req, res) => {
   try {
@@ -41,7 +42,18 @@ exports.getAssociates = async (req, res) => {
       { $group: { _id: '$associate', count: { $sum: 1 } } },
     ]);
     const countMap = Object.fromEntries(leadCounts.map(c => [String(c._id), c.count]));
-    const result = associates.map(a => ({ ...a.toObject(), leadCount: countMap[String(a._id)] || 0 }));
+    // Live count of tutor listings each associate has added — recomputed on every
+    // request, so it always reflects adds and deletes.
+    const tutorCounts = await Tutor.aggregate([
+      { $match: { createdByAssociate: { $ne: null } } },
+      { $group: { _id: '$createdByAssociate', count: { $sum: 1 } } },
+    ]);
+    const tutorMap = Object.fromEntries(tutorCounts.map(c => [String(c._id), c.count]));
+    const result = associates.map(a => ({
+      ...a.toObject(),
+      leadCount: countMap[String(a._id)] || 0,
+      tutorCount: tutorMap[String(a._id)] || 0,
+    }));
     res.json(result);
   } catch (err) {
     res.status(500).json({ message: err.message });

@@ -8,6 +8,11 @@ const authMiddleware = (req, res, next) => {
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Only admin tokens pass. Associate tokens are signed with the same secret,
+    // so without this check an associate could call every admin endpoint.
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
     req.admin = decoded;
     next();
   } catch (err) {

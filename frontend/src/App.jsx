@@ -24,6 +24,7 @@ import AssociateRegister from './pages/associate/AssociateRegister'
 import AssociateLeads from './pages/associate/AssociateLeads'
 import AssociateTutors from './pages/associate/AssociateTutors'
 import AdminFreelancePosters from './pages/admin/AdminFreelancePosters'
+import AdminRegistrationLinks from './pages/admin/AdminRegistrationLinks'
 import Tutors from './pages/public/Tutors'
 import AdminTutors from './pages/admin/AdminTutors'
 
@@ -40,6 +41,7 @@ export default function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/associate/login" element={<AssociateLogin />} />
         <Route path="/associate/register" element={<AssociateRegister />} />
+        <Route path="/associate/register/:token" element={<AssociateRegister />} />
         <Route path="/tutors" element={<Tutors />} />
 
         {/* Associate protected — same navbar/footer chrome as the rest of the public site */}
@@ -60,6 +62,7 @@ export default function App() {
         <Route path="contacts" element={<AdminContacts />} />
         <Route path="franchise-partners" element={<AdminFranchisePartners />} />
         <Route path="associates" element={<AdminAssociates />} />
+        <Route path="registration-links" element={<AdminRegistrationLinks />} />
         <Route path="qr" element={<AdminQRCode />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="tutors" element={<AdminTutors />} />

@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const ctrl = require('../controllers/tutorController');
 const auth = require('../middleware/authMiddleware');
+const anyAuth = require('../middleware/anyAuthMiddleware');
 
 // Admin-only, placed before the public `/` route's siblings so specific
 // paths aren't swallowed by anything more general.
@@ -11,10 +12,10 @@ router.get('/filters', ctrl.getFilterOptions);
 router.get('/', ctrl.getTutors);
 
 // Admin — every listing, including hidden ones, same optional filters.
-router.get('/all', auth, ctrl.getAllTutors);
+router.get('/all', anyAuth, ctrl.getAllTutors);
 
-router.post('/', auth, ctrl.createTutor);
-router.put('/:id', auth, ctrl.updateTutor);
-router.delete('/:id', auth, ctrl.deleteTutor);
+router.post('/', anyAuth, ctrl.createTutor);
+router.put('/:id', anyAuth, ctrl.updateTutor);
+router.delete('/:id', anyAuth, ctrl.deleteTutor);
 
 module.exports = router;

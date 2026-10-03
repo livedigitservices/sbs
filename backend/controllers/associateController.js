@@ -2,8 +2,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Associate = require('../models/Associate');
 const Lead = require('../models/Lead');
+const RegistrationInvite = require('../models/RegistrationInvite');
 
-const MOBILE_REGEX = /^[6-9]\d{9}$/; // Indian mobile number format
+const CLIENT_ID_REGEX = /^[A-Za-z0-9._-]{4,30}$/;
 
 function signToken(associate) {
   return jwt.sign(
@@ -24,39 +25,66 @@ function sanitize(associate) {
 }
 
 exports.register = async (req, res) => {
+  let claimedInvite = null;
   try {
-    const { name, mobile } = req.body;
+    const { clientId, password, token } = req.body;
 
-    if (!name || !name.trim()) {
-      return res.status(400).json({ message: 'Full name is required' });
+    // Validate first, so a typo doesn't burn the single-use link.
+    if (!clientId || !CLIENT_ID_REGEX.test(clientId.trim())) {
+      return res.status(400).json({ message: 'Client ID must be 4-30 characters: letters, numbers, dot, dash or underscore' });
     }
-    if (!mobile || !MOBILE_REGEX.test(mobile.trim())) {
-      return res.status(400).json({ message: 'Enter a valid 10-digit mobile number' });
+    if (!password || password.length < 8 || password.length > 72) {
+      return res.status(400).json({ message: 'Password must be 8-72 characters' });
+    }
+    if (!token || typeof token !== 'string') {
+      return res.status(403).json({ message: 'Please contact admin' });
     }
 
-    const existing = await Associate.findOne({ mobile: mobile.trim() });
-    if (existing) {
-      return res.status(409).json({ message: 'This mobile number is already registered' });
+    const normalizedClientId = clientId.trim().toLowerCase();
+
+    if (await Associate.findOne({ associateId: normalizedClientId })) {
+      return res.status(409).json({ message: 'This Client ID is already taken' });
     }
 
-    const hashedPassword = await bcrypt.hash(mobile.trim(), 10);
+    // Atomically claim the link: only one request can flip usedAt from null,
+    // so a link can never create two associates.
+    claimedInvite = await RegistrationInvite.findOneAndUpdate(
+      { token, usedAt: null, isRevoked: false, expiresAt: { $gt: new Date() } },
+      { usedAt: new Date() },
+      { new: true }
+    );
+    if (!claimedInvite) {
+      return res.status(403).json({ message: 'This registration link is invalid or has expired. Please contact admin.' });
+    }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // The form only collects Client ID + password. The Associate model still
+    // requires name and a unique mobile, so both are filled with the Client ID
+    // (already unique) — name shows up in the admin lists.
     const associate = await Associate.create({
-      name: name.trim(),
-      mobile: mobile.trim(),
-      associateId: mobile.trim(),
+      name: normalizedClientId,
+      mobile: normalizedClientId,
+      associateId: normalizedClientId,
       password: hashedPassword,
-      isDefaultPassword: true,
+      isDefaultPassword: false,
     });
+
+    claimedInvite.usedBy = associate._id;
+    await claimedInvite.save();
 
     res.status(201).json({
       message: 'Registration successful',
-      associateId: associate.associateId,
+      clientId: associate.associateId,
       associate: sanitize(associate),
     });
   } catch (err) {
+    // Registration failed after the link was claimed — give the link back.
+    if (claimedInvite) {
+      await RegistrationInvite.updateOne({ _id: claimedInvite._id }, { usedAt: null, usedBy: null }).catch(() => {});
+    }
     if (err.code === 11000) {
-      return res.status(409).json({ message: 'This mobile number is already registered' });
+      return res.status(409).json({ message: 'This Client ID is already taken' });
     }
     res.status(400).json({ message: err.message });
   }
@@ -66,18 +94,18 @@ exports.login = async (req, res) => {
   try {
     const { associateId, password } = req.body;
     if (!associateId || !password) {
-      return res.status(400).json({ message: 'Associate ID and password are required' });
+      return res.status(400).json({ message: 'Client ID and password are required' });
     }
 
-    const associate = await Associate.findOne({
-      $or: [{ associateId: associateId.trim() }, { mobile: associateId.trim() }],
-    });
+    // Client ID is stored lowercase; existing associates' IDs are their mobile
+    // numbers, which are unaffected by lowercasing.
+    const associate = await Associate.findOne({ associateId: String(associateId).trim().toLowerCase() });
 
     if (!associate || !associate.isActive) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const match = await bcrypt.compare(password, associate.password);
+    const match = await bcrypt.compare(String(password), associate.password);
     if (!match) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }

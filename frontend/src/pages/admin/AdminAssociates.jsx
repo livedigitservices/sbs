@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Users2, Search, ChevronLeft, ChevronRight, Ban, CheckCircle2, ArrowLeft } from 'lucide-react'
+import { Users2, GraduationCap, Search, ChevronLeft, ChevronRight, Ban, CheckCircle2, ArrowLeft } from 'lucide-react'
 import api from '../../api'
 import toast from 'react-hot-toast'
 
@@ -11,6 +11,7 @@ export default function AdminAssociates() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState(null) // associate whose leads we're viewing
+  const [selectedTutors, setSelectedTutors] = useState(null) // associate whose tutors we're viewing
 
   const load = () => {
     setLoading(true)
@@ -31,6 +32,7 @@ export default function AdminAssociates() {
   )
 
   if (selected) return <AssociateLeadsAdminView associate={selected} onBack={() => setSelected(null)} />
+  if (selectedTutors) return <AssociateTutorsAdminView associate={selectedTutors} onBack={() => { setSelectedTutors(null); load() }} />
 
   return (
     <div>
@@ -46,7 +48,7 @@ export default function AdminAssociates() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-theme">
-                {['Name', 'Associate ID', 'Leads', 'Status', 'Joined', 'Actions'].map(h => (
+                {['Name', 'Client ID', 'Leads', 'Tutors', 'Status', 'Joined', 'Actions'].map(h => (
                   <th key={h} className="text-left px-5 py-3 text-theme-muted font-medium text-xs whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -55,7 +57,7 @@ export default function AdminAssociates() {
               {loading ? (
                 [...Array(5)].map((_, i) => (
                   <tr key={i} className="border-b border-theme">
-                    {[...Array(6)].map((_, j) => <td key={j} className="px-5 py-4"><div className="h-3 bg-theme-tertiary rounded animate-pulse" /></td>)}
+                    {[...Array(7)].map((_, j) => <td key={j} className="px-5 py-4"><div className="h-3 bg-theme-tertiary rounded animate-pulse" /></td>)}
                   </tr>
                 ))
               ) : filtered.map(a => (
@@ -65,6 +67,11 @@ export default function AdminAssociates() {
                   <td className="px-5 py-3">
                     <button onClick={() => setSelected(a)} className="flex items-center gap-1.5 text-[#FFD700] hover:underline">
                       <Users2 size={13} /> {a.leadCount}
+                    </button>
+                  </td>
+                  <td className="px-5 py-3">
+                    <button onClick={() => setSelectedTutors(a)} className="flex items-center gap-1.5 text-[#FFD700] hover:underline">
+                      <GraduationCap size={13} /> {a.tutorCount ?? 0}
                     </button>
                   </td>
                   <td className="px-5 py-3">
@@ -168,6 +175,65 @@ function AssociateLeadsAdminView({ associate, onBack }) {
             </div>
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+function AssociateTutorsAdminView({ associate, onBack }) {
+  const [tutors, setTutors] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    api.get('/tutors/all', { params: { associate: associate._id } })
+      .then(r => setTutors(r.data))
+      .finally(() => setLoading(false))
+  }, [associate._id])
+
+  return (
+    <div>
+      <button onClick={onBack} className="flex items-center gap-1.5 text-theme-secondary hover:text-theme-primary text-sm mb-4 transition">
+        <ArrowLeft size={15} /> Back to Associates
+      </button>
+      <div className="mb-6">
+        <h1 className="text-theme-primary font-black text-2xl">{associate.name}'s Tutors</h1>
+        <p className="text-theme-secondary text-sm">{loading ? '…' : tutors.length} tutors added · Client ID {associate.associateId}</p>
+      </div>
+
+      <div className="bg-theme-card border border-theme rounded-2xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-theme">
+                {['Name', 'Subjects', 'Phone', 'Status', 'Added'].map(h => (
+                  <th key={h} className="text-left px-5 py-3 text-theme-muted font-medium text-xs whitespace-nowrap">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                [...Array(3)].map((_, i) => (
+                  <tr key={i} className="border-b border-theme">
+                    {[...Array(5)].map((_, j) => <td key={j} className="px-5 py-4"><div className="h-3 bg-theme-tertiary rounded animate-pulse" /></td>)}
+                  </tr>
+                ))
+              ) : tutors.map(t => (
+                <tr key={t._id} className="border-b border-theme hover:bg-theme-tertiary transition">
+                  <td className="px-5 py-3 text-theme-primary font-medium whitespace-nowrap">{t.name}</td>
+                  <td className="px-5 py-3 text-theme-secondary max-w-[220px] truncate">{(t.subjects || []).join(', ') || '—'}</td>
+                  <td className="px-5 py-3 text-theme-secondary whitespace-nowrap">{t.contactPhone || '—'}</td>
+                  <td className="px-5 py-3">
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${t.isActive ? 'bg-[#44DD88]/10 text-[#44DD88]' : 'bg-red-500/10 text-red-400'}`}>
+                      {t.isActive ? 'Visible' : 'Hidden'}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3 text-theme-muted text-xs whitespace-nowrap">{new Date(t.createdAt).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {!loading && !tutors.length && <div className="p-10 text-center text-theme-muted">This associate hasn't added any tutors yet.</div>}
+        </div>
       </div>
     </div>
   )
