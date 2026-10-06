@@ -49,6 +49,20 @@ exports.getTutors = async (req, res) => {
 
     const hasFilters = Boolean(subject || level || language);
 
+    // Case-insensitive "does this array field contain the chosen value" -> 1/0.
+    const matches = (field, val) => ({
+      $cond: [
+        {
+          $in: [
+            val.trim().toLowerCase(),
+            { $map: { input: { $ifNull: [field, []] }, as: 'v', in: { $toLower: '$$v' } } },
+          ],
+        },
+        1,
+        0,
+      ],
+    });
+
     // No subject/level/language chosen — plain listing, original sort.
     if (!hasFilters) {
       const tutors = await Tutor.find(match).sort({ order: 1, createdAt: -1 });
@@ -62,9 +76,9 @@ exports.getTutors = async (req, res) => {
         $addFields: {
           matchCount: {
             $add: [
-              subject ? { $cond: [{ $in: [subject.trim(), '$subjects'] }, 1, 0] } : 0,
-              level ? { $cond: [{ $in: [level.trim(), '$levels'] }, 1, 0] } : 0,
-              language ? { $cond: [{ $in: [language.trim(), '$languages'] }, 1, 0] } : 0,
+              subject ? matches('$subjects', subject) : 0,
+              level ? matches('$levels', level) : 0,
+              language ? matches('$languages', language) : 0,
             ],
           },
         },
@@ -102,11 +116,14 @@ exports.getFilterOptions = async (req, res) => {
       Tutor.distinct('levels', { isActive: true }),
       Tutor.distinct('languages', { isActive: true }),
     ]);
-    res.json({
-      subjects: subjects.sort((a, b) => a.localeCompare(b)),
-      levels: levels.sort((a, b) => a.localeCompare(b)),
-      languages: languages.sort((a, b) => a.localeCompare(b)),
-    });
+    // Collapse values that differ only by case ("Maths" / "maths") so the
+    // dropdowns don't show duplicates; matching above is case-insensitive.
+    const uniq = (arr) => {
+      const seen = new Map();
+      arr.forEach(v => { const k = v.trim().toLowerCase(); if (k && !seen.has(k)) seen.set(k, v.trim()); });
+      return [...seen.values()].sort((a, b) => a.localeCompare(b));
+    };
+    res.json({ subjects: uniq(subjects), levels: uniq(levels), languages: uniq(languages) });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

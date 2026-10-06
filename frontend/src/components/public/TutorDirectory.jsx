@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, GraduationCap, Phone, Mail, X, MessageCircle, UserPlus } from 'lucide-react'
+import { ArrowLeft, GraduationCap, Phone, Mail, X, MessageCircle, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react'
 import api from '../../api'
 
 /* -------------------------------- PALETTE --------------------------------
@@ -14,6 +14,9 @@ const CARD = '#173a72'
 const BLUE = '#2563EB'
 const YELLOW = '#f4c542'
 
+// Number of tutor cards shown per page (applies to search results too)
+const PAGE_SIZE = 3
+
 // Public "Find your Online Tutor / Trainer / Teacher / Coach / Mentor /
 // Advisor / Counsellor" directory. Unlike the static poster galleries, this
 // section is fully dynamic: listings, and the filter dropdown options
@@ -22,6 +25,7 @@ export default function TutorDirectory() {
   const [tutors, setTutors] = useState([])
   const [filterOptions, setFilterOptions] = useState({ subjects: [], levels: [], languages: [] })
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   // Draft values bound to the dropdowns — changing these does NOT trigger a
   // search. They only take effect once the visitor clicks "Search".
   const [subject, setSubject] = useState('')
@@ -31,6 +35,7 @@ export default function TutorDirectory() {
   // page loads showing every published listing by default.
   const [appliedFilters, setAppliedFilters] = useState({ subject: '', level: '', language: '' })
   const [contactTutor, setContactTutor] = useState(null)
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     api.get('/tutors/filters').then(r => setFilterOptions(r.data)).catch(() => {})
@@ -38,24 +43,32 @@ export default function TutorDirectory() {
 
   useEffect(() => {
     setLoading(true)
+    setPage(1)
     const params = {}
     if (appliedFilters.subject) params.subject = appliedFilters.subject
     if (appliedFilters.level) params.level = appliedFilters.level
     if (appliedFilters.language) params.language = appliedFilters.language
 
+    // Ignore responses from superseded requests (e.g. rapid Search clicks)
+    // so an older, slower response can never overwrite a newer result.
+    let cancelled = false
+    setLoadError(false)
     api.get('/tutors', { params })
-      .then(r => setTutors(r.data))
-      .catch(() => setTutors([]))
-      .finally(() => setLoading(false))
+      .then(r => { if (!cancelled) setTutors(Array.isArray(r.data) ? r.data : []) })
+      .catch(() => { if (!cancelled) { setTutors([]); setLoadError(true) } })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
   }, [appliedFilters])
 
   const handleSearch = () => {
     setAppliedFilters({ subject, level, language })
+    setPage(1)
   }
 
   const handleClearFilters = () => {
     setSubject(''); setLevel(''); setLanguage('')
     setAppliedFilters({ subject: '', level: '', language: '' })
+    setPage(1)
   }
 
   useEffect(() => {
@@ -65,7 +78,17 @@ export default function TutorDirectory() {
     return () => window.removeEventListener('keydown', onKey)
   }, [contactTutor])
 
+  const totalPages = Math.max(1, Math.ceil(tutors.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const pagedTutors = tutors.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+
+  const goToPage = (n) => {
+    setPage(Math.min(Math.max(n, 1), totalPages))
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   const hasActiveFilters = appliedFilters.subject || appliedFilters.level || appliedFilters.language
+  const hasDraftFilters = subject || level || language
  const selectClass =
   "w-full px-3 py-2.5 rounded-lg bg-white text-sm focus:outline-none transition-colors"
 
@@ -166,7 +189,7 @@ const optionStyle = {
             >
               Search
             </button>
-            {hasActiveFilters && (
+            {(hasActiveFilters || hasDraftFilters) && (
               <button
                 onClick={handleClearFilters}
                 className="text-xs hover:underline"
@@ -181,7 +204,7 @@ const optionStyle = {
         {/* Results */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(6)].map((_, i) => (
+            {[...Array(PAGE_SIZE)].map((_, i) => (
               <div key={i} className="rounded-2xl h-64 animate-pulse" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }} />
             ))}
           </div>
@@ -189,12 +212,15 @@ const optionStyle = {
           <div className="text-center py-20">
             <GraduationCap size={40} className="mx-auto mb-4" style={{ color: 'rgba(255,255,255,0.3)' }} />
             <p className="text-white/70">
-              {hasActiveFilters ? 'No listings match your search.' : 'No listings available yet. Check back soon.'}
+              {loadError
+                ? 'Could not load listings. Please try again.'
+                : hasActiveFilters ? 'No listings match your search.' : 'No listings available yet. Check back soon.'}
             </p>
           </div>
         ) : (
+          <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {tutors.map(t => (
+            {pagedTutors.map(t => (
               <div
                 key={t._id}
                 className="rounded-2xl overflow-hidden flex flex-col card-hover bg-[#2564eb42]"
@@ -237,6 +263,31 @@ const optionStyle = {
               </div>
             ))}
           </div>
+
+          {tutors.length > PAGE_SIZE && (
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <button
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-bold transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ backgroundColor: BLUE, color: PAGE_BG }}
+              >
+                <ChevronLeft size={16} /> Previous
+              </button>
+              <span className="text-black text-sm font-semibold">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-bold transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ backgroundColor: BLUE, color: PAGE_BG }}
+              >
+                Next <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
+          </>
         )}
       </div>
       </div>
