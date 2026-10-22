@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Associate = require('../models/Associate');
 const Lead = require('../models/Lead');
-const RegistrationInvite = require('../models/RegistrationInvite');
+const linkCtrl = require('./registrationLinkController');
 
 const CLIENT_ID_REGEX = /^[A-Za-z0-9._-]{4,30}$/;
 
@@ -25,19 +25,20 @@ function sanitize(associate) {
 }
 
 exports.register = async (req, res) => {
-  let claimedInvite = null;
   try {
     const { clientId, password, token } = req.body;
 
-    // Validate first, so a typo doesn't burn the single-use link.
-    if (!clientId || !CLIENT_ID_REGEX.test(clientId.trim())) {
+    // 1. The shared registration link must be live and enabled.
+    if (!(await linkCtrl.isValidToken(token))) {
+      return res.status(403).json({ message: 'This registration link is invalid or disabled. Please contact admin.' });
+    }
+
+    // 2. Validate input.
+    if (!clientId || typeof clientId !== 'string' || !CLIENT_ID_REGEX.test(clientId.trim())) {
       return res.status(400).json({ message: 'Client ID must be 4-30 characters: letters, numbers, dot, dash or underscore' });
     }
-    if (!password || password.length < 8 || password.length > 72) {
+    if (!password || typeof password !== 'string' || password.length < 8 || password.length > 72) {
       return res.status(400).json({ message: 'Password must be 8-72 characters' });
-    }
-    if (!token || typeof token !== 'string') {
-      return res.status(403).json({ message: 'Please contact admin' });
     }
 
     const normalizedClientId = clientId.trim().toLowerCase();
@@ -46,22 +47,11 @@ exports.register = async (req, res) => {
       return res.status(409).json({ message: 'This Client ID is already taken' });
     }
 
-    // Atomically claim the link: only one request can flip usedAt from null,
-    // so a link can never create two associates.
-    claimedInvite = await RegistrationInvite.findOneAndUpdate(
-      { token, usedAt: null, isRevoked: false, expiresAt: { $gt: new Date() } },
-      { usedAt: new Date() },
-      { new: true }
-    );
-    if (!claimedInvite) {
-      return res.status(403).json({ message: 'This registration link is invalid or has expired. Please contact admin.' });
-    }
-
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // The form only collects Client ID + password. The Associate model still
     // requires name and a unique mobile, so both are filled with the Client ID
-    // (already unique) — name shows up in the admin lists.
+    // (already unique) - name shows up in the admin lists.
     const associate = await Associate.create({
       name: normalizedClientId,
       mobile: normalizedClientId,
@@ -70,19 +60,13 @@ exports.register = async (req, res) => {
       isDefaultPassword: false,
     });
 
-    claimedInvite.usedBy = associate._id;
-    await claimedInvite.save();
-
     res.status(201).json({
       message: 'Registration successful',
       clientId: associate.associateId,
       associate: sanitize(associate),
     });
   } catch (err) {
-    // Registration failed after the link was claimed — give the link back.
-    if (claimedInvite) {
-      await RegistrationInvite.updateOne({ _id: claimedInvite._id }, { usedAt: null, usedBy: null }).catch(() => {});
-    }
+    // Two people picking the same Client ID at the same moment.
     if (err.code === 11000) {
       return res.status(409).json({ message: 'This Client ID is already taken' });
     }

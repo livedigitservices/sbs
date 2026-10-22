@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Phone, MapPin, Store, ChevronDown } from 'lucide-react'
+import { Phone, MapPin, Store } from 'lucide-react'
 import api from '../../api'
 import { normalizeCards } from '../../utils/franchise'
 
@@ -16,51 +16,13 @@ const cleanPhone = (raw) => {
   return hasPlus ? `+${digits}` : digits
 }
 
-const AREAS_PREVIEW = 6
-
 function PersonCard({ person }) {
-  const [showAll, setShowAll] = useState(false)
-  const areas = person.areas || []
-  const visible = showAll ? areas : areas.slice(0, AREAS_PREVIEW)
   const phones = person.phones || []
 
   return (
     <div className="bg-theme-card border border-theme rounded-2xl overflow-hidden flex flex-col transition-shadow duration-300 hover:shadow-[0_12px_32px_rgba(37,99,235,0.10)]">
-      {/* 1. Pincode + area lines on top (this person only) */}
-      {areas.length > 0 && (
-        <div className="px-4 sm:px-5 pt-4 pb-3" style={{ background: `${FRANCHISE_COLOR}06` }}>
-          <ul className="space-y-2">
-            {visible.map((a, i) => (
-              <li key={i} className="flex items-baseline gap-3 text-sm">
-                {a.pincode ? (
-                  <span
-                    className="shrink-0 font-mono font-semibold tabular-nums"
-                    style={{ color: FRANCHISE_COLOR }}
-                  >
-                    {a.pincode}
-                  </span>
-                ) : null}
-                <span className="text-theme-primary min-w-0 break-words">{a.area}</span>
-              </li>
-            ))}
-          </ul>
-
-          {areas.length > AREAS_PREVIEW && (
-            <button
-              type="button"
-              onClick={() => setShowAll(s => !s)}
-              className="mt-3 inline-flex items-center gap-1 text-xs font-semibold transition-opacity hover:opacity-70"
-              style={{ color: FRANCHISE_COLOR }}
-            >
-              {showAll ? 'Show less' : `Show all ${areas.length} areas`}
-              <ChevronDown size={14} className={`transition-transform ${showAll ? 'rotate-180' : ''}`} />
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* 2. Below: person name on the left, mobile number(s) on the right */}
-      <div className="border-t border-theme px-4 sm:px-5 py-3.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 mt-auto">
+      {/* Person name on the left, mobile number(s) on the right */}
+      <div className="px-4 sm:px-5 py-3.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 mt-auto">
         <span className="text-theme-primary font-semibold text-sm">{person.name}</span>
         <div className="flex flex-col items-end gap-1 ml-auto">
           {phones.map((ph, i) => (
@@ -160,7 +122,7 @@ export default function Contact() {
                         </span>
                       </div>
 
-                      {/* One separate card per person, newest first (as ordered by the admin) */}
+                      {/* One separate card per person, newest first */}
                       <div className="p-3 sm:p-4 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-start">
                         {card.persons.map((person, pi) => (
                           <PersonCard key={`${person.name}-${pi}`} person={person} />

@@ -1,125 +1,100 @@
 import React, { useState, useEffect } from 'react'
-import { Link2, Copy, Plus, Ban } from 'lucide-react'
+import { Link2, Copy, RefreshCw, Power } from 'lucide-react'
 import api from '../../api'
 import toast from 'react-hot-toast'
-
-const STATUS_STYLE = {
-  active:  'bg-[#44DD88]/10 text-[#44DD88]',
-  used:    'bg-[#4488FF]/10 text-[#4488FF]',
-  expired: 'bg-[#FF8800]/10 text-[#FF8800]',
-  revoked: 'bg-red-500/10 text-red-400',
-}
 
 const linkFor = (token) => `${window.location.origin}/associate/register/${token}`
 
 export default function AdminRegistrationLinks() {
-  const [links, setLinks] = useState([])
+  const [link, setLink] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [label, setLabel] = useState('')
-  const [creating, setCreating] = useState(false)
+  const [busy, setBusy] = useState(false)
 
-  const load = () => {
-    setLoading(true)
-    api.get('/admin/registration-links')
-      .then(r => setLinks(r.data))
-      .catch(() => toast.error('Failed to load links'))
+  useEffect(() => {
+    api.get('/admin/registration-link')
+      .then(r => setLink(r.data))
+      .catch(() => toast.error('Failed to load registration link'))
       .finally(() => setLoading(false))
-  }
-  useEffect(load, [])
+  }, [])
 
-  const copy = async (token) => {
-    try { await navigator.clipboard.writeText(linkFor(token)); toast.success('Link copied') }
+  const url = link ? linkFor(link.token) : ''
+
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(url); toast.success('Link copied') }
     catch { toast.error('Could not copy — select the link and copy it manually') }
   }
 
-  const create = async () => {
-    setCreating(true)
+  const toggle = async () => {
+    setBusy(true)
     try {
-      const res = await api.post('/admin/registration-links', { label })
-      setLabel('')
-      setLinks(prev => [res.data, ...prev])
-      await copy(res.data.token)
+      const res = await api.put('/admin/registration-link/status', { isActive: !link.isActive })
+      setLink(res.data)
+      toast.success(res.data.isActive ? 'Registration enabled' : 'Registration disabled')
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Failed to create link')
-    } finally { setCreating(false) }
+      toast.error(err?.response?.data?.message || 'Failed to update')
+    } finally { setBusy(false) }
   }
 
-  const revoke = async (id) => {
-    if (!confirm('Revoke this link? It will stop working immediately.')) return
+  const regenerate = async () => {
+    if (!confirm('Generate a new link? The current link will stop working immediately and you will need to share the new one.')) return
+    setBusy(true)
     try {
-      const res = await api.delete(`/admin/registration-links/${id}`)
-      setLinks(prev => prev.map(l => l._id === id ? { ...l, ...res.data } : l))
-      toast.success('Link revoked')
-    } catch (err) { toast.error(err?.response?.data?.message || 'Failed to revoke') }
+      const res = await api.post('/admin/registration-link/regenerate')
+      setLink(res.data)
+      toast.success('New link generated')
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to regenerate')
+    } finally { setBusy(false) }
   }
 
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-theme-primary font-black text-2xl">Registration Links</h1>
+        <h1 className="text-theme-primary font-black text-2xl">Registration Link</h1>
         <p className="text-theme-secondary text-sm">
-          Each link lets one person register as an associate. It works once and expires after 7 days.
+          One permanent link for everyone. Anyone who opens it can register as a new associate. It never expires.
         </p>
       </div>
 
-      <div className="bg-theme-card border border-theme rounded-2xl p-4 mb-6 flex flex-wrap gap-3 items-center">
-        <input type="text" placeholder="Note (optional) — e.g. who this link is for" value={label} maxLength={80}
-          onChange={e => setLabel(e.target.value)}
-          className="flex-1 min-w-[220px] input-bg border border-theme rounded-xl px-4 py-2.5 text-theme-primary text-sm placeholder-theme-muted focus:border-[#FFD700]/60" />
-        <button onClick={create} disabled={creating}
-          className="flex items-center gap-2 bg-[#2563EB] text-[#fefafa] font-bold px-4 py-2.5 rounded-xl hover:bg-[#1357eb] transition text-sm disabled:opacity-70">
-          <Plus size={16} /> {creating ? 'Generating…' : 'Generate Link'}
-        </button>
-      </div>
+      <div className="bg-theme-card border border-theme rounded-2xl p-5 max-w-3xl">
+        {loading ? (
+          <div className="h-10 bg-theme-tertiary rounded animate-pulse" />
+        ) : !link ? (
+          <p className="text-theme-muted text-sm">Could not load the link. Refresh the page.</p>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-theme-muted text-xs font-semibold uppercase tracking-wide">Shareable link</span>
+              <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${link.isActive ? 'bg-[#44DD88]/10 text-[#44DD88]' : 'bg-red-500/10 text-red-400'}`}>
+                {link.isActive ? 'Active' : 'Disabled'}
+              </span>
+            </div>
 
-      <div className="bg-theme-card border border-theme rounded-2xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-theme">
-                {['Note', 'Link', 'Status', 'Created', 'Expires / Used by', 'Actions'].map(h => (
-                  <th key={h} className="text-left px-5 py-3 text-theme-muted font-medium text-xs whitespace-nowrap">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                [...Array(3)].map((_, i) => (
-                  <tr key={i} className="border-b border-theme">
-                    {[...Array(6)].map((_, j) => <td key={j} className="px-5 py-4"><div className="h-3 bg-theme-tertiary rounded animate-pulse" /></td>)}
-                  </tr>
-                ))
-              ) : links.map(l => (
-                <tr key={l._id} className="border-b border-theme hover:bg-theme-tertiary transition">
-                  <td className="px-5 py-3 text-theme-primary whitespace-nowrap">{l.label || '—'}</td>
-                  <td className="px-5 py-3 text-theme-secondary max-w-[260px] truncate font-mono text-xs">
-                    <Link2 size={12} className="inline mr-1.5 -mt-0.5" />{linkFor(l.token)}
-                  </td>
-                  <td className="px-5 py-3">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${STATUS_STYLE[l.status]}`}>{l.status}</span>
-                  </td>
-                  <td className="px-5 py-3 text-theme-muted text-xs whitespace-nowrap">{new Date(l.createdAt).toLocaleDateString()}</td>
-                  <td className="px-5 py-3 text-theme-muted text-xs whitespace-nowrap">
-                    {l.status === 'used' && l.usedBy ? `${l.usedBy.name} (${l.usedBy.associateId})` : new Date(l.expiresAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-5 py-3">
-                    <div className="flex gap-1.5">
-                      {l.status === 'active' && (
-                        <>
-                          <button onClick={() => copy(l.token)} title="Copy link"
-                            className="p-1.5 rounded-lg bg-theme-tertiary text-theme-muted hover:text-theme-primary transition"><Copy size={13} /></button>
-                          <button onClick={() => revoke(l._id)} title="Revoke link"
-                            className="p-1.5 rounded-lg bg-theme-tertiary text-theme-muted hover:bg-red-500/10 hover:text-red-400 transition"><Ban size={13} /></button>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {!loading && !links.length && <div className="p-10 text-center text-theme-muted">No links yet. Generate one above.</div>}
-        </div>
+            <div className="flex flex-wrap gap-3 items-center">
+              <div className="flex-1 min-w-[240px] input-bg border border-theme rounded-xl px-4 py-2.5 text-theme-secondary font-mono text-xs break-all">
+                <Link2 size={12} className="inline mr-1.5 -mt-0.5" />{url}
+              </div>
+              <button onClick={copy}
+                className="flex items-center gap-2 bg-[#2563EB] text-[#fefafa] font-bold px-4 py-2.5 rounded-xl hover:bg-[#1357eb] transition text-sm">
+                <Copy size={15} /> Copy Link
+              </button>
+            </div>
+
+            <div className="flex flex-wrap gap-3 mt-5 pt-5 border-t border-theme">
+              <button onClick={toggle} disabled={busy}
+                className="flex items-center gap-2 bg-theme-tertiary text-theme-primary font-semibold px-4 py-2 rounded-xl hover:opacity-80 transition text-sm disabled:opacity-60">
+                <Power size={14} /> {link.isActive ? 'Disable registration' : 'Enable registration'}
+              </button>
+              <button onClick={regenerate} disabled={busy}
+                className="flex items-center gap-2 bg-theme-tertiary text-red-400 font-semibold px-4 py-2 rounded-xl hover:bg-red-500/10 transition text-sm disabled:opacity-60">
+                <RefreshCw size={14} /> Generate new link
+              </button>
+            </div>
+            <p className="text-theme-muted text-xs mt-3">
+              Registered associates appear under Associates. Generate a new link only if this one is misused — the old one stops working immediately.
+            </p>
+          </>
+        )}
       </div>
     </div>
   )

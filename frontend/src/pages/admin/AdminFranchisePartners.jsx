@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Plus, Edit, Trash2, X, MapPin, User, Phone, ChevronDown, ChevronUp, Store, Hash } from 'lucide-react'
+import { Plus, Edit, Trash2, X, User, Phone, ChevronDown, ChevronUp, Store } from 'lucide-react'
 import api from '../../api'
 import toast from 'react-hot-toast'
 import { normalizeCards } from '../../utils/franchise'
@@ -10,21 +10,22 @@ const labelClass = "text-theme-muted text-xs font-semibold uppercase tracking-wi
 const addBtnClass = "flex items-center gap-1 text-xs font-semibold text-[#FFD700] hover:text-[#E6C200] transition"
 const removeBtnClass = "p-2 rounded-lg text-theme-muted hover:text-red-400 hover:bg-red-500/10 transition shrink-0"
 
-const emptyArea   = () => ({ area: '', pincode: '' })
-const emptyPerson = () => ({ name: '', phones: [''], areas: [emptyArea()] })
-const emptyForm   = () => ({ state: '', order: 0, persons: [emptyPerson()] })
+const emptyPerson = () => ({ name: '', phones: [''] })
+const emptyForm = () => ({ state: '', order: 0, persons: [emptyPerson()] })
 
 export default function AdminFranchisePartners() {
-  const [states, setStates]     = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [modal, setModal]       = useState({ open: false, card: null })
-  const [form, setForm]         = useState(emptyForm())
-  const [saving, setSaving]     = useState(false)
+  const [states, setStates] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [modal, setModal] = useState({ open: false, card: null })
+  const [form, setForm] = useState(emptyForm())
+  const [saving, setSaving] = useState(false)
   const [expanded, setExpanded] = useState({})
 
   const load = () => {
     setLoading(true)
-    api.get('/franchise-partners').then(r => setStates(normalizeCards(r.data))).finally(() => setLoading(false))
+    api.get('/franchise-partners')
+      .then(r => setStates(normalizeCards(r.data)))
+      .finally(() => setLoading(false))
   }
   useEffect(load, [])
 
@@ -34,11 +35,7 @@ export default function AdminFranchisePartners() {
       state: c.state,
       order: c.order || 0,
       persons: c.persons.length
-        ? c.persons.map(p => ({
-            name: p.name || '',
-            phones: p.phones?.length ? [...p.phones] : [''],
-            areas: p.areas?.length ? p.areas.map(a => ({ area: a.area || '', pincode: a.pincode || '' })) : [emptyArea()],
-          }))
+        ? c.persons.map(p => ({ name: p.name || '', phones: p.phones?.length ? [...p.phones] : [''] }))
         : [emptyPerson()],
     })
     setModal({ open: true, card: c })
@@ -46,7 +43,7 @@ export default function AdminFranchisePartners() {
   const closeModal = () => setModal({ open: false, card: null })
   const toggleExpand = (id) => setExpanded(e => ({ ...e, [id]: !e[id] }))
 
-  // ── form helpers: every change touches ONE person only ──
+  // Every change touches ONE person only.
   const patchPerson = (pi, fn) => setForm(f => ({
     ...f, persons: f.persons.map((p, i) => (i === pi ? fn(p) : p)),
   }))
@@ -54,18 +51,11 @@ export default function AdminFranchisePartners() {
   // New person goes to the TOP of the state card.
   const addPerson = () => setForm(f => ({ ...f, persons: [emptyPerson(), ...f.persons] }))
   const removePerson = (pi) => setForm(f => ({ ...f, persons: f.persons.filter((_, i) => i !== pi) }))
-
   const setName = (pi, v) => patchPerson(pi, p => ({ ...p, name: v }))
 
   const addPhone = (pi) => patchPerson(pi, p => ({ ...p, phones: [...p.phones, ''] }))
   const setPhone = (pi, xi, v) => patchPerson(pi, p => ({ ...p, phones: p.phones.map((x, i) => (i === xi ? v : x)) }))
   const removePhone = (pi, xi) => patchPerson(pi, p => ({ ...p, phones: p.phones.filter((_, i) => i !== xi) }))
-
-  const addArea = (pi) => patchPerson(pi, p => ({ ...p, areas: [...p.areas, emptyArea()] }))
-  const setArea = (pi, ai, field, v) => patchPerson(pi, p => ({
-    ...p, areas: p.areas.map((a, i) => (i === ai ? { ...a, [field]: v } : a)),
-  }))
-  const removeArea = (pi, ai) => patchPerson(pi, p => ({ ...p, areas: p.areas.filter((_, i) => i !== ai) }))
 
   const validate = () => {
     if (!form.state.trim()) { toast.error('State name is required'); return false }
@@ -74,11 +64,6 @@ export default function AdminFranchisePartners() {
       const who = p.name.trim() || `Person ${i + 1}`
       if (!p.name.trim()) { toast.error(`Enter a name for person ${i + 1}`); return false }
       if (!p.phones.some(x => x.trim())) { toast.error(`Add at least one mobile number for ${who}`); return false }
-      for (const a of p.areas) {
-        if (a.pincode.trim() && !/^\d{6}$/.test(a.pincode.trim())) {
-          toast.error(`PIN code "${a.pincode}" (${who}) must be 6 digits`); return false
-        }
-      }
     }
     return true
   }
@@ -93,9 +78,6 @@ export default function AdminFranchisePartners() {
       persons: form.persons.map(p => ({
         name: p.name.trim(),
         phones: p.phones.map(x => x.trim()).filter(Boolean),
-        areas: p.areas
-          .map(a => ({ area: a.area.trim(), pincode: a.pincode.trim() }))
-          .filter(a => a.area || a.pincode),
       })),
     }
     try {
@@ -149,7 +131,6 @@ export default function AdminFranchisePartners() {
         <div className="space-y-4">
           {states.map((c) => {
             const isOpen = !!expanded[c._id]
-            const areaCount = c.persons.reduce((n, p) => n + p.areas.length, 0)
             return (
               <div key={c._id} className="bg-theme-card border border-theme rounded-2xl overflow-hidden">
                 <div className="flex items-center gap-3 px-5 py-4 cursor-pointer" onClick={() => toggleExpand(c._id)}>
@@ -159,7 +140,7 @@ export default function AdminFranchisePartners() {
                   <div className="flex-1 min-w-0">
                     <p className="text-theme-primary font-bold">{c.state}</p>
                     <p className="text-theme-muted text-xs">
-                      {c.persons.length} person{c.persons.length === 1 ? '' : 's'} · {areaCount} area{areaCount === 1 ? '' : 's'} · order {c.order}
+                      {c.persons.length} person{c.persons.length === 1 ? '' : 's'} · order {c.order}
                     </p>
                   </div>
                   <button onClick={(e) => { e.stopPropagation(); openEdit(c) }}
@@ -176,26 +157,15 @@ export default function AdminFranchisePartners() {
                 {isOpen && (
                   <div className="border-t border-theme px-5 py-4 grid gap-3 md:grid-cols-2 items-start">
                     {c.persons.map((p, pi) => (
-                      <div key={pi} className="bg-theme-tertiary rounded-xl p-4 space-y-3">
+                      <div key={pi} className="bg-theme-tertiary rounded-xl p-4 space-y-2">
                         <p className="text-theme-primary font-semibold text-sm flex items-center gap-1.5">
                           <User size={13} className="text-theme-muted" />{p.name}
                         </p>
-                        <div className="space-y-1">
-                          {p.phones.map((ph, xi) => (
-                            <p key={xi} className="text-theme-secondary font-mono text-xs flex items-center gap-1.5">
-                              <Phone size={11} />{ph}
-                            </p>
-                          ))}
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {p.areas.length === 0 && <span className="text-theme-muted text-xs">No areas</span>}
-                          {p.areas.map((a, ai) => (
-                            <span key={ai} className="text-xs px-2 py-1 rounded-md bg-theme-card text-theme-secondary flex items-center gap-1">
-                              <MapPin size={10} className="text-theme-muted" />
-                              {a.area}{a.area && a.pincode ? ' · ' : ''}{a.pincode}
-                            </span>
-                          ))}
-                        </div>
+                        {p.phones.map((ph, xi) => (
+                          <p key={xi} className="text-theme-secondary font-mono text-xs flex items-center gap-1.5">
+                            <Phone size={11} />{ph}
+                          </p>
+                        ))}
                       </div>
                     ))}
                   </div>
@@ -238,34 +208,8 @@ export default function AdminFranchisePartners() {
 
                 {form.persons.map((p, pi) => (
                   <div key={pi} className="border border-theme rounded-xl p-4 space-y-4 bg-theme-tertiary/40">
-                    {/* areas + pin codes */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className={labelClass}>Pincode &amp; Area</label>
-                        <button type="button" onClick={() => addArea(pi)} className={addBtnClass}>
-                          <Plus size={13} /> Add Area
-                        </button>
-                      </div>
-                      {p.areas.map((a, ai) => (
-                        <div key={ai} className="flex items-center gap-2">
-                          <div className="relative max-w-[110px] sm:max-w-[130px] w-full shrink-0">
-                            <Hash size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-theme-muted pointer-events-none" />
-                            <input type="text" inputMode="numeric" maxLength={6} placeholder="PIN" value={a.pincode}
-                              onChange={e => setArea(pi, ai, 'pincode', e.target.value.replace(/\D/g, ''))}
-                              className={`${smallInputClass} pl-7`} />
-                          </div>
-                          <input type="text" placeholder="Area (e.g. Nalgonda)" value={a.area}
-                            onChange={e => setArea(pi, ai, 'area', e.target.value)} className={smallInputClass} />
-                          {p.areas.length > 1 && (
-                            <button type="button" onClick={() => removeArea(pi, ai)} className={removeBtnClass}><X size={14} /></button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* name */}
                     <div className="flex items-center gap-2">
-                      <input type="text" placeholder="Person name (shown below the areas)" value={p.name}
+                      <input type="text" placeholder="Person name" value={p.name}
                         onChange={e => setName(pi, e.target.value)} className={smallInputClass} required />
                       {form.persons.length > 1 && (
                         <button type="button" onClick={() => removePerson(pi)} title="Remove this person" className={removeBtnClass}>
@@ -274,7 +218,6 @@ export default function AdminFranchisePartners() {
                       )}
                     </div>
 
-                    {/* mobile numbers */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <label className={labelClass}>Mobile Number(s)</label>

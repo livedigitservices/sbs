@@ -1,10 +1,10 @@
 const router = require('express').Router();
 const ctrl = require('../controllers/associateController');
 const auth = require('../middleware/associateAuthMiddleware');
-const inviteCtrl = require('../controllers/registrationInviteController');
+const linkCtrl = require('../controllers/registrationLinkController');
 const loginLimiter = require('../middleware/loginLimiter');
 
-router.get('/register/validate/:token', loginLimiter, inviteCtrl.validateInvite);
+router.get('/register/validate/:token', loginLimiter, linkCtrl.validateLink);
 router.post('/register', loginLimiter, ctrl.register);
 router.post('/login', loginLimiter, ctrl.login);
 router.post('/logout', auth, ctrl.logout);

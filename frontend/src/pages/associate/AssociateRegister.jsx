@@ -4,9 +4,9 @@ import { CheckCircle2, BadgeCheck, Lock, Eye, EyeOff } from 'lucide-react'
 import { associateApi } from '../../api'
 import toast from 'react-hot-toast'
 
-// Reachable only through an admin-generated link: /associate/register/<token>.
+// Reachable through the admin's single permanent link: /associate/register/<token>.
 // The token is verified with the backend before the form is ever rendered.
-// With no token, or an invalid / used / expired / revoked one, the visitor
+// With no token, or a wrong / disabled / replaced one, the visitor
 // only sees "Please Contact Admin".
 export default function AssociateRegister() {
   const { token } = useParams()
@@ -17,8 +17,7 @@ export default function AssociateRegister() {
   const [success, setSuccess] = useState(null)
   const navigate = useNavigate()
 
-
-   const CONTACT_BG = 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+  const CONTACT_BG = 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
 
   useEffect(() => {
     if (!token) return
@@ -75,24 +74,22 @@ export default function AssociateRegister() {
   }
 
   if (linkState === 'invalid') {
-  return shell(
-    <div
-      className="relative overflow-hidden border border-theme rounded-3xl px-8 py-16 min-h-[300px] flex items-center justify-center text-center bg-[#2563EB] bg-cover bg-center"
-      style={{ backgroundImage: `url(${CONTACT_BG})` }}
-    >
-      <div className="absolute inset-0 bg-gradient-to-b from-[#2563EB]/70 to-black/70" />
-      <div className="relative z-10">
-        <h1 className="text-white font-bold text-3xl md:text-4xl drop-shadow">Please Contact Admin</h1>
+    return shell(
+      <div
+        className="relative overflow-hidden border border-theme rounded-3xl px-8 py-16 min-h-[300px] flex items-center justify-center text-center bg-[#2563EB] bg-cover bg-center"
+        style={{ backgroundImage: `url(${CONTACT_BG})` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-[#2563EB]/70 to-black/70" />
+        <div className="relative z-10">
+          <h1 className="text-white font-bold text-3xl md:text-4xl drop-shadow">Please Contact Admin</h1>
+        </div>
       </div>
-    </div>,
-    'max-w-3xl'
-  )
-}
+    )
+  }
 
   const inputClass = "w-full input-bg border border-theme rounded-xl pl-10 pr-4 py-3 text-theme-primary text-sm placeholder-theme-muted focus:border-[#FFD700]/60"
   const labelClass = "text-theme-secondary text-xs font-semibold uppercase tracking-wide mb-2 block"
   const iconClass = "absolute left-3.5 top-1/2 -translate-y-1/2 text-theme-muted"
-
 
   return shell(
     <>

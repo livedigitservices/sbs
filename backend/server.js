@@ -6,6 +6,9 @@ require('dotenv').config();
 
 const app = express();
 
+// Behind Vercel's proxy: use the real client IP so the rate limiter is per-user, not global.
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(cors({
   origin: [
