@@ -1,5 +1,6 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 
 const phdTypes = [
   'Regular Ph.D',
@@ -71,22 +72,26 @@ export default function PhdAdmissions() {
           <div className="relative pt-10">
             <div className="grid grid-cols-3 gap-3 mb-3">
               {phdTypes.map(label => (
-                <div
+                <Link
                   key={label}
-                  className="rounded-xl flex items-center justify-center text-center px-2 py-4"
+                  to="/contact"
+                  aria-label={`Enquire about ${label}`}
+                  className="rounded-xl flex flex-col items-center justify-center gap-1.5 text-center px-2 py-4 transition hover:brightness-125 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                   style={{ backgroundColor: BLUE }}
                 >
                   <span className="text-white text-[13px] font-bold leading-tight">{label}</span>
-                </div>
+                </Link>
               ))}
             </div>
             <div className="flex justify-center">
-              <div
-                className="rounded-xl flex items-center justify-center text-center px-8 py-5"
+              <Link
+                to="/contact"
+                aria-label="Enquire about Honorary Ph.D"
+                className="rounded-xl flex flex-col items-center justify-center gap-1.5 text-center px-8 py-5 transition hover:brightness-125 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 style={{ backgroundColor: BLUE, width: '66%' }}
               >
                 <span className="text-white text-xl font-bold">Honorary Ph.D</span>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
@@ -112,11 +117,20 @@ export default function PhdAdmissions() {
             <div className="inline-block rounded-r-full pl-4 pr-8 py-2.5 mb-5 -ml-5" style={{ backgroundColor: '#2563eb' }}>
               <h2 className="text-white font-bold text-lg tracking-wide">WE HELP YOU</h2>
             </div>
-            <ul className="space-y-3">
+            <ul className="space-y-2.5">
               {weHelpYou.map(item => (
-                <li key={item} className="flex items-baseline gap-2">
-                  <span className="text-white text-sm">&middot;</span>
-                  <span className="text-white text-sm">{item}</span>
+                <li key={item}>
+                  <div
+                    to="/contact"
+                    aria-label={`Enquire about ${item}`}
+                    className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 transition hover:bg-white/15 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                    style={{ border: '1.5px solid rgba(255,255,255,0.35)', backgroundColor: 'rgba(255,255,255,0.08)' }}
+                  >
+                    <span className="flex items-baseline gap-2 min-w-0">
+                      <span className="text-white text-sm">&middot;</span>
+                      <span className="text-white text-sm">{item}</span>
+                    </span>
+                  </div>
                 </li>
               ))}
             </ul>

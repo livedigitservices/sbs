@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import {
-  CalendarClock, Briefcase, Laptop, Award,
+  CalendarClock, Briefcase, Laptop, Award, ArrowRight,
 } from 'lucide-react'
 import PopupForm from '../../components/PopupForm'
 import LogoScroller from '../../components/LogoScroller'
@@ -45,11 +45,8 @@ const HERO_IMG = 'https://images.stockcake.com/public/e/e/c/eec11db7-afd9-4bbe-8
 const WHY_IMG = 'https://images.stockcake.com/public/b/e/d/beda1f28-36e8-444b-bdba-ea1a7e16f5d9_large/reading-in-nature-stockcake.jpg'
 
 /* -------------------------------- PALETTE --------------------------------
-   Brand red/maroon from the reference PDF. These are used as literal
-   background fills (photo overlays, panels) which look right unchanged in
-   both modes. Anywhere the color sits directly on the page background
-   (plain text, borders, notes) gets a `dark:` companion below so contrast
-   holds up on a dark surface.
+   Brand red/maroon from the reference PDF. The public site is light-only,
+   so there are intentionally no `dark:` variants on this page.
 ------------------------------------------------------------------------- */
 const RED = '#E32619'
 const RED_DARK = '#B01810'
@@ -58,15 +55,15 @@ const MAROON_DEEP = '#1E0404'
 
 /* ------------------------------- SUBCOMPONENTS ----------------------------- */
 
-// `dark` here means "this section already sits on a dark photo/gradient",
-// not the site's dark mode — it always renders white text.
+// `dark` here means "this section already sits on a dark photo/gradient" —
+// it always renders white text.
 function SectionHeading({ children, dark = false }) {
   return (
     <h2
       className={`text-2xl sm:text-3xl font-extrabold uppercase tracking-wide mb-6 pb-2 inline-block border-b-4 ${
         dark
           ? 'text-white border-white/40'
-          : 'text-[#E32619] dark:text-[#FF6E5F] border-[#E32619]/30 dark:border-[#FF6E5F]/40'
+          : 'text-[#E32619] border-[#E32619]/30'
       }`}
     >
       {children}
@@ -78,7 +75,7 @@ function RedButton({ children, onClick, className = '' }) {
   return (
     <button
       onClick={onClick}
-      className={`px-6 py-3 rounded-full font-extrabold text-sm bg-[#E32619] dark:bg-[#FF3B2B] text-white hover:bg-[#B01810] dark:hover:bg-[#E32619] transition shadow-md ${className}`}
+      className={`px-6 py-3 rounded-full font-extrabold text-sm bg-[#E32619] text-white hover:bg-[#B01810] transition shadow-md ${className}`}
     >
       {children}
     </button>
@@ -91,14 +88,11 @@ export default function OnlineDegrees() {
   const navigate = useNavigate()
   const [panel, setPanel] = useState({ open: false, degree: null })
 
-  const openEnquiry = (title) =>
-    setPanel({ open: false, degree: { _id: title, title, university: 'SBS – Sai Business Services' } })
-
   return (
     <div className="page-enter bg-theme-primary min-h-screen">
 
       {/* ---------------- HERO ---------------- */}
-      {/* Photo + dark overlay reads correctly unchanged in both modes */}
+      {/* Photo + dark overlay */}
       <section
         className="relative bg-cover bg-center"
         style={{ backgroundImage: `url(${HERO_IMG})` }}
@@ -126,13 +120,17 @@ export default function OnlineDegrees() {
           <p className="text-white font-extrabold text-lg mb-5">Under Graduate</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {undergraduate.map(c => (
-              <button
+              <Link
                 key={c.code}
-                onClick={() => openEnquiry(`${c.code} – ${c.name}`)}
-                className="bg-white rounded-xl py-4 px-2 text-center hover:scale-[1.03] transition"
+                to="/contact"
+                title={c.name}
+                aria-label={`Enquire about ${c.name}`}
+                className="bg-white rounded-xl py-4 px-2 text-center flex flex-col items-center justify-center gap-1 min-h-[76px] hover:scale-[1.03] active:scale-[0.98] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#E32619]"
               >
-                <p className="font-extrabold" style={{ color: RED }}>{c.code}</p>
-              </button>
+                <span className="font-extrabold" style={{ color: RED }}>{c.code}</span>
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold" style={{ color: RED_DARK }}>
+                </span>
+              </Link>
             ))}
           </div>
         </div>
@@ -141,14 +139,18 @@ export default function OnlineDegrees() {
           <p className="text-white font-extrabold text-lg mb-5">Post Graduate</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {postgraduate.map(c => (
-              <button
+              <Link
                 key={c.code}
-                onClick={() => openEnquiry(`${c.code} – ${c.name}`)}
-                className="rounded-xl py-4 px-2 text-center hover:scale-[1.03] transition"
+                to="/contact"
+                title={c.name}
+                aria-label={`Enquire about ${c.name}`}
+                className="rounded-xl py-4 px-2 text-center flex flex-col items-center justify-center gap-1 min-h-[76px] hover:scale-[1.03] active:scale-[0.98] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#3B0808]"
                 style={{ backgroundColor: RED_DARK }}
               >
-                <p className="text-white font-extrabold">{c.code}</p>
-              </button>
+                <span className="text-white font-extrabold">{c.code}</span>
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-white/85">
+                </span>
+              </Link>
             ))}
           </div>
         </div>
@@ -207,33 +209,33 @@ export default function OnlineDegrees() {
 
       {/* ---------------- TAGLINE ---------------- */}
       <section className="bg-theme-primary py-10">
-        <p className="text-center font-extrabold text-lg sm:text-xl text-[#E32619] dark:text-[#FF6E5F]">
+        <p className="text-center font-extrabold text-lg sm:text-xl text-[#E32619]">
           Your Education. Our Guidance.
         </p>
       </section>
 
       {/* ---------------- START YOUR ONLINE EDUCATION JOURNEY ---------------- */}
       <section className="max-w-3xl mx-auto px-6 py-16 text-center">
-        <h2 className="text-3xl sm:text-4xl font-extrabold mb-2 leading-tight text-[#3B0808] dark:text-white">
+        <h2 className="text-3xl sm:text-4xl font-extrabold mb-2 leading-tight text-[#3B0808]">
           Start Your Online Education Journey
         </h2>
-        <p className="text-lg mb-6 text-[#E32619] dark:text-[#FF6E5F]">Your Next Qualification Is Just A Step Away.</p>
+        <p className="text-lg mb-6 text-[#E32619]">Your Next Qualification Is Just A Step Away.</p>
         <p className="text-theme-secondary mb-8 leading-relaxed">
           Explore online programs that match your{' '}
-          <strong className="text-[#3B0808] dark:text-white">career goals, educational background, and schedule</strong>.
+          <strong className="text-[#3B0808]">career goals, educational background, and schedule</strong>.
         </p>
 
         <p className="text-xs font-bold uppercase tracking-wide text-theme-secondary mb-2">Popular Programs</p>
-        <p className="font-bold mb-6 text-[#3B0808] dark:text-white">{courseCodes.join(' | ')}</p>
+        <p className="font-bold mb-6 text-[#3B0808]">{courseCodes.join(' | ')}</p>
 
         <div className="flex flex-wrap gap-3 justify-center mb-10">
           <RedButton onClick={() => navigate('/contact')}>Explore Courses</RedButton>
           <RedButton onClick={() => navigate('/contact')}>Apply Now</RedButton>
         </div>
 
-        <div className="rounded-xl p-5 text-left bg-[#FBEAE8] dark:bg-[#3B0808]/40">
+        <div className="rounded-xl p-5 text-left bg-[#FBEAE8]">
           <p className="text-theme-secondary text-sm leading-relaxed">
-            <strong className="text-[#3B0808] dark:text-[#FF6E5F]">Note:</strong> Course availability, fees,
+            <strong className="text-[#3B0808]">Note:</strong> Course availability, fees,
             duration, eligibility, recognition, and admission requirements vary by university and
             program. Verify current details with the respective institution before applying.
           </p>
