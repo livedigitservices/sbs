@@ -7,7 +7,6 @@ const NAV = [
   { to: '/admin/tutors',           label: 'Tutors/Mentors', icon: GraduationCap },
   { to: '/admin/associates',       label: 'Associates',     icon: Users2 },
   { to: '/admin/registration-links', label: 'Registration Links', icon: Link2 },
-  { to: '/admin/contacts',         label: 'Contacts',       icon: Phone },
   { to: '/admin/franchise-partners', label: 'Franchise Partners', icon: Store },
   { to: '/admin/qr',               label: 'QR Generator',   icon: QrCode },
   { to: '/admin/settings',         label: 'Settings',       icon: Settings },

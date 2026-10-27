@@ -104,24 +104,6 @@ export default function Contact() {
                       className="bg-theme-card border border-theme rounded-2xl overflow-hidden"
                       style={{ borderTop: `3px solid ${FRANCHISE_COLOR}` }}
                     >
-                      <div
-                        className="flex items-center gap-3 px-4 sm:px-5 py-4"
-                        style={{ background: `${FRANCHISE_COLOR}10` }}
-                      >
-                        <div
-                          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                          style={{ background: `${FRANCHISE_COLOR}20` }}
-                        >
-                          <MapPin size={16} style={{ color: FRANCHISE_COLOR }} />
-                        </div>
-                        <h3 className="text-theme-primary font-bold text-lg tracking-wide flex-1 min-w-0 truncate">
-                          {card.state}
-                        </h3>
-                        <span className="text-xs font-semibold text-theme-secondary shrink-0">
-                          {card.persons.length} partner{card.persons.length === 1 ? '' : 's'}
-                        </span>
-                      </div>
-
                       {/* One separate card per person, newest first */}
                       <div className="p-3 sm:p-4 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-start">
                         {card.persons.map((person, pi) => (

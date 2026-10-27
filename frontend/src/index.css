@@ -1,14 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  --color-sbs-yellow: #FFD700;
-  --color-sbs-yellow-dark: #E6C200;
-  --color-sbs-yellow-light: #FFF3B0;
   --color-sbs-black: #0A0A0A;
   --color-sbs-dark: #111111;
   --color-sbs-gray: #1A1A1A;
   --color-sbs-muted: #6B7280;
   --font-sans: 'Inter', sans-serif;
+}
+
+/* ─── BRAND COLORS — change them here and the whole admin UI follows ───
+   Use in JSX as: bg-accent  text-accent  border-accent  hover:bg-accent-hover
+                  bg-accent/10 (any opacity)  text-accent-contrast  bg-success  accent-accent
+   `static` makes sure the variables are always emitted so CSS / inline
+   styles can use var(--color-accent) too. */
+@theme static {
+  --color-accent:          #2563EB;   /* primary: buttons, links, focus, icons */
+  --color-accent-hover:    #1D4ED8;   /* primary on hover */
+  --color-accent-contrast: #FFFFFF;   /* text/icon colour ON the primary colour */
+  --color-accent-alt:      #7C3AED;   /* secondary highlight (e.g. partner sections) */
+  --color-success:         #16A34A;   /* "Active" badges, success ticks */
 }
 
 * { box-sizing: border-box; }
@@ -20,7 +30,7 @@
   --bg-tertiary:   #F1EFE8;
   --bg-card:       #ffffff;
   --border-color:  rgba(0,0,0,0.08);
-  --border-gold:   rgba(180,130,0,0.25);
+  --border-gold:   color-mix(in srgb, var(--color-accent) 25%, transparent);
   --text-primary:  #111111;
   --text-secondary:#4B5563;
   --text-muted:    #9CA3AF;
@@ -94,12 +104,12 @@ body.no-scroll {
 }
 .card-hover:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(180,130,0,0.10);
+  box-shadow: 0 20px 40px color-mix(in srgb, var(--color-accent) 12%, transparent);
 }
 
-/* ─── GOLD TEXT ─── */
+/* ─── ACCENT GRADIENT TEXT ─── */
 .gold-text {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  background: linear-gradient(135deg, var(--color-accent) 0%, color-mix(in srgb, var(--color-accent) 60%, white) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -113,12 +123,12 @@ body.no-scroll {
 /* ─── SCROLLBAR ─── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--scrollbar-bg); }
-::-webkit-scrollbar-thumb { background: #FFD700; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--color-accent); border-radius: 3px; }
 
 /* ─── INPUT FOCUS ─── */
 input:focus, select:focus, textarea:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(180,130,0,0.3);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 30%, transparent);
 }
 
 /* ─── PAGE TRANSITION ─── */
@@ -130,10 +140,10 @@ input:focus, select:focus, textarea:focus {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ─── PULSE ─── */
+/* ─── PULSE (accent) ─── */
 @keyframes pulse-gold {
-  0%,100% { box-shadow: 0 0 0 0 rgba(255,215,0,0.4); }
-  50%     { box-shadow: 0 0 0 8px rgba(255,215,0,0); }
+  0%,100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 40%, transparent); }
+  50%     { box-shadow: 0 0 0 8px transparent; }
 }
 .pulse-gold { animation: pulse-gold 6s infinite; }
 

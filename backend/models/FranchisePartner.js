@@ -14,7 +14,7 @@ const personSchema = new mongoose.Schema({
 }, { _id: false });
 
 const franchisePartnerSchema = new mongoose.Schema({
-  state:   { type: String, required: true, trim: true },
+  state:   { type: String, default: '', trim: true },
   order:   { type: Number, default: 0 },
   // Array order IS display order: index 0 (top) = newest person.
   persons: [personSchema],

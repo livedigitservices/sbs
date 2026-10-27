@@ -128,7 +128,7 @@ export default function TutorManager() {
     load()
   }
 
-  const inputClass = "w-full input-bg border border-theme rounded-xl px-4 py-3 text-theme-primary text-sm placeholder-[var(--text-muted)] focus:border-[#FFD700]/60"
+  const inputClass = "w-full input-bg border border-theme rounded-xl px-4 py-3 text-theme-primary text-sm placeholder-[var(--text-muted)] focus:border-accent/60"
   const labelClass = "text-theme-muted text-xs font-semibold uppercase tracking-wide mb-1.5 block"
 
   return (
@@ -139,7 +139,7 @@ export default function TutorManager() {
           <p className="text-theme-muted text-xs mt-0.5">Manage listings shown on the public "Find your Online Tutor" page</p>
         </div>
         <button onClick={openAdd}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFD700] text-[#0A0A0A] font-bold text-sm hover:bg-[#E6C200] transition shrink-0">
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-accent-contrast font-bold text-sm hover:bg-accent-hover transition shrink-0">
           <Plus size={16} /> Add Listing
         </button>
       </div>
@@ -167,7 +167,7 @@ export default function TutorManager() {
                     <span className="text-theme-muted text-[9px]">No Photo</span>
                   </div>
                 )}
-                <span className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${t.isActive ? 'bg-[#44DD88]/90 text-[#0A0A0A]' : 'bg-red-500/90 text-white'}`}>
+                <span className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${t.isActive ? 'bg-success/90 text-white' : 'bg-red-500/90 text-white'}`}>
                   {t.isActive ? 'Active' : 'Hidden'}
                 </span>
               </div>
@@ -183,7 +183,7 @@ export default function TutorManager() {
                   <p className="text-theme-muted text-[10px] line-clamp-1">Languages: {toCsv(t.languages)}</p>
                 )}
                 <div className="flex gap-1 mt-auto pt-1.5">
-                  <button onClick={() => openEdit(t)} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-theme-tertiary hover:bg-[#FFD700]/10 hover:text-[#FFD700] text-theme-muted transition text-[11px]">
+                  <button onClick={() => openEdit(t)} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-theme-tertiary hover:bg-accent/10 hover:text-accent text-theme-muted transition text-[11px]">
                     <Edit size={12} /> Edit
                   </button>
                   <button onClick={() => handleDelete(t._id)} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-theme-tertiary hover:bg-red-500/10 hover:text-red-400 text-theme-muted transition text-[11px]">
@@ -213,7 +213,7 @@ export default function TutorManager() {
 
               {/* <div>
                 <label className={labelClass}>Photo (optional)</label>
-                <label className="flex items-center gap-3 p-3 border border-dashed border-theme rounded-xl cursor-pointer hover:border-[#FFD700]/40 transition input-bg">
+                <label className="flex items-center gap-3 p-3 border border-dashed border-theme rounded-xl cursor-pointer hover:border-accent/40 transition input-bg">
                   <Upload size={16} className="text-theme-muted shrink-0" />
                   <span className="text-theme-secondary text-sm truncate">
                     {file ? file.name : (modal.tutor ? 'Replace existing photo' : 'Upload a photo (optional)')}
@@ -222,7 +222,7 @@ export default function TutorManager() {
                 </label>
                 {modal.tutor?.imageUrl && !file && (
                   <a href={modal.tutor.imageUrl} target="_blank" rel="noreferrer"
-                    className="inline-block mt-1.5 text-xs text-[#FFD700] hover:underline">
+                    className="inline-block mt-1.5 text-xs text-accent hover:underline">
                     View current photo
                   </a>
                 )}
@@ -283,7 +283,7 @@ export default function TutorManager() {
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="isActive" checked={form.isActive}
                   onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))}
-                  className="w-4 h-4 accent-[#FFD700]" />
+                  className="w-4 h-4 accent-accent" />
                 <label htmlFor="isActive" className="text-theme-secondary text-sm">Published (visible to site visitors)</label>
               </div>
 
@@ -293,7 +293,7 @@ export default function TutorManager() {
                   Cancel
                 </button>
                 <button type="submit" disabled={saving}
-                  className="flex-1 py-3 rounded-xl bg-[#FFD700] text-[#0A0A0A] font-bold hover:bg-[#E6C200] transition text-sm disabled:opacity-70">
+                  className="flex-1 py-3 rounded-xl bg-accent text-accent-contrast font-bold hover:bg-accent-hover transition text-sm disabled:opacity-70">
                   {uploading ? 'Uploading photo...' : saving ? 'Saving...' : modal.tutor ? 'Update Listing' : 'Add Listing'}
                 </button>
               </div>

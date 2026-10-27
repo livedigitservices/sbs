@@ -4,14 +4,14 @@ import api from '../../api'
 import toast from 'react-hot-toast'
 import { normalizeCards } from '../../utils/franchise'
 
-const inputClass = "w-full input-bg border border-theme rounded-xl px-4 py-3 text-theme-primary text-sm placeholder-[var(--text-muted)] focus:border-[#FFD700]/60"
-const smallInputClass = "w-full input-bg border border-theme rounded-lg px-3 py-2 text-theme-primary text-sm placeholder-[var(--text-muted)] focus:border-[#FFD700]/60"
+const inputClass = "w-full input-bg border border-theme rounded-xl px-4 py-3 text-theme-primary text-sm placeholder-[var(--text-muted)] focus:border-[#2563EB]/60"
+const smallInputClass = "w-full input-bg border border-theme rounded-lg px-3 py-2 text-theme-primary text-sm placeholder-[var(--text-muted)] focus:border-[#2563EB]/60"
 const labelClass = "text-theme-muted text-xs font-semibold uppercase tracking-wide"
-const addBtnClass = "flex items-center gap-1 text-xs font-semibold text-[#FFD700] hover:text-[#E6C200] transition"
+const addBtnClass = "flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition"
 const removeBtnClass = "p-2 rounded-lg text-theme-muted hover:text-red-400 hover:bg-red-500/10 transition shrink-0"
 
 const emptyPerson = () => ({ name: '', phones: [''] })
-const emptyForm = () => ({ state: '', order: 0, persons: [emptyPerson()] })
+const emptyForm = () => ({ persons: [emptyPerson()] })
 
 export default function AdminFranchisePartners() {
   const [states, setStates] = useState([])
@@ -32,8 +32,6 @@ export default function AdminFranchisePartners() {
   const openAdd = () => { setForm(emptyForm()); setModal({ open: true, card: null }) }
   const openEdit = (c) => {
     setForm({
-      state: c.state,
-      order: c.order || 0,
       persons: c.persons.length
         ? c.persons.map(p => ({ name: p.name || '', phones: p.phones?.length ? [...p.phones] : [''] }))
         : [emptyPerson()],
@@ -58,7 +56,6 @@ export default function AdminFranchisePartners() {
   const removePhone = (pi, xi) => patchPerson(pi, p => ({ ...p, phones: p.phones.filter((_, i) => i !== xi) }))
 
   const validate = () => {
-    if (!form.state.trim()) { toast.error('State name is required'); return false }
     if (!form.persons.length) { toast.error('Add at least one person'); return false }
     for (const [i, p] of form.persons.entries()) {
       const who = p.name.trim() || `Person ${i + 1}`
@@ -73,8 +70,6 @@ export default function AdminFranchisePartners() {
     if (!validate()) return
     setSaving(true)
     const payload = {
-      state: form.state.trim(),
-      order: Number(form.order) || 0,
       persons: form.persons.map(p => ({
         name: p.name.trim(),
         phones: p.phones.map(x => x.trim()).filter(Boolean),
@@ -112,7 +107,7 @@ export default function AdminFranchisePartners() {
           <p className="text-theme-secondary text-sm">{states.length} state{states.length === 1 ? '' : 's'}</p>
         </div>
         <button onClick={openAdd}
-          className="flex items-center gap-2 bg-[#FFD700] text-[#0A0A0A] font-bold px-4 py-2.5 rounded-xl hover:bg-[#E6C200] transition text-sm">
+          className="flex items-center gap-2 bg-[#2563EB] text-white font-bold px-4 py-2.5 rounded-xl hover:bg-[#1D4ED8] transition text-sm">
           <Plus size={16} /> Add State
         </button>
       </div>
@@ -134,17 +129,17 @@ export default function AdminFranchisePartners() {
             return (
               <div key={c._id} className="bg-theme-card border border-theme rounded-2xl overflow-hidden">
                 <div className="flex items-center gap-3 px-5 py-4 cursor-pointer" onClick={() => toggleExpand(c._id)}>
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-[#FFD700]/10 shrink-0">
-                    <Store size={16} className="text-[#FFD700]" />
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-[#2563EB]/10 shrink-0">
+                    <Store size={16} className="text-[#2563EB]" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-theme-primary font-bold">{c.state}</p>
+                    <p className="text-theme-primary font-bold">{c.state || 'Franchise Partner'}</p>
                     <p className="text-theme-muted text-xs">
-                      {c.persons.length} person{c.persons.length === 1 ? '' : 's'} · order {c.order}
+                      {c.persons.length} person{c.persons.length === 1 ? '' : 's'}
                     </p>
                   </div>
                   <button onClick={(e) => { e.stopPropagation(); openEdit(c) }}
-                    className="p-1.5 rounded-lg bg-theme-tertiary hover:bg-[#FFD700]/10 hover:text-[#FFD700] text-theme-muted transition">
+                    className="p-1.5 rounded-lg bg-theme-tertiary hover:bg-[#2563EB]/10 hover:text-[#2563EB] text-theme-muted transition">
                     <Edit size={13} />
                   </button>
                   <button onClick={(e) => { e.stopPropagation(); handleDelete(c._id) }}
@@ -185,19 +180,6 @@ export default function AdminFranchisePartners() {
             </div>
 
             <form onSubmit={handleSave} className="p-5 space-y-5 overflow-y-auto">
-              <div className="grid grid-cols-3 gap-3">
-                <div className="col-span-2">
-                  <label className={`${labelClass} mb-1.5 block`}>State Name</label>
-                  <input type="text" placeholder="e.g. Telangana" value={form.state}
-                    onChange={e => setForm(f => ({ ...f, state: e.target.value }))} className={inputClass} required />
-                </div>
-                <div>
-                  <label className={`${labelClass} mb-1.5 block`}>Order</label>
-                  <input type="number" value={form.order}
-                    onChange={e => setForm(f => ({ ...f, order: e.target.value }))} className={inputClass} />
-                </div>
-              </div>
-
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <label className={labelClass}>Person(s) — newest on top</label>
@@ -245,7 +227,7 @@ export default function AdminFranchisePartners() {
                   Cancel
                 </button>
                 <button type="submit" disabled={saving}
-                  className="flex-1 py-3 rounded-xl bg-[#FFD700] text-[#0A0A0A] font-bold hover:bg-[#E6C200] transition text-sm disabled:opacity-70">
+                  className="flex-1 py-3 rounded-xl bg-[#2563EB] text-white font-bold hover:bg-[#1D4ED8] transition text-sm disabled:opacity-70">
                   {saving ? 'Saving...' : modal.card ? 'Update' : 'Add State Card'}
                 </button>
               </div>

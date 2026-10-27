@@ -174,7 +174,7 @@ export default function AdminResources() {
     load()
   }
 
-  const inputClass = "w-full input-bg border border-theme rounded-xl px-4 py-3 text-theme-primary text-sm placeholder-[var(--text-muted)] focus:border-[#FFD700]/60"
+  const inputClass = "w-full input-bg border border-theme rounded-xl px-4 py-3 text-theme-primary text-sm placeholder-[var(--text-muted)] focus:border-accent/60"
 
   return (
     <div>
@@ -185,7 +185,7 @@ export default function AdminResources() {
           <p className="text-theme-muted text-xs mt-0.5">Upload images, videos, or social links for each service</p>
         </div>
         <button onClick={openAdd}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFD700] text-[#0A0A0A] font-bold text-sm hover:bg-[#E6C200] transition shrink-0">
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-accent-contrast font-bold text-sm hover:bg-accent-hover transition shrink-0">
           <Plus size={16} /> Add Resource
         </button>
       </div>
@@ -220,7 +220,7 @@ export default function AdminResources() {
                         <img src={r.url} alt={r.title} className="w-full h-full object-cover" />
                       ) : (
                         <a href={r.url} target="_blank" rel="noreferrer"
-                          className="w-full h-full flex flex-col items-center justify-center gap-1.5 text-theme-secondary hover:text-[#FFD700] transition">
+                          className="w-full h-full flex flex-col items-center justify-center gap-1.5 text-theme-secondary hover:text-accent transition">
                           {platformIcon(r.platform, 22)}
                           <span className="text-[11px] font-semibold flex items-center gap-1">Open link <ExternalLink size={10} /></span>
                         </a>
@@ -229,14 +229,14 @@ export default function AdminResources() {
                         {r.type === 'video' ? <VideoIcon size={9} /> : r.type === 'image' ? <ImageIcon size={9} /> : platformIcon(r.platform, 9)}
                         {r.type === 'link' ? (r.platform || 'link') : r.type}
                       </span>
-                      <span className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${r.isActive ? 'bg-[#44DD88]/90 text-[#0A0A0A]' : 'bg-red-500/90 text-white'}`}>
+                      <span className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${r.isActive ? 'bg-success/90 text-white' : 'bg-red-500/90 text-white'}`}>
                         {r.isActive ? 'Active' : 'Hidden'}
                       </span>
                     </div>
                     <div className="p-2.5 flex items-center justify-between gap-2">
                       <p className="text-theme-primary font-semibold text-xs line-clamp-1">{r.title}</p>
                       <div className="flex gap-1 shrink-0">
-                        <button onClick={() => openEdit(r)} className="p-1.5 rounded-lg bg-theme-tertiary hover:bg-[#FFD700]/10 hover:text-[#FFD700] text-theme-muted transition">
+                        <button onClick={() => openEdit(r)} className="p-1.5 rounded-lg bg-theme-tertiary hover:bg-accent/10 hover:text-accent text-theme-muted transition">
                           <Edit size={12} />
                         </button>
                         <button onClick={() => handleDelete(r._id)} className="p-1.5 rounded-lg bg-theme-tertiary hover:bg-red-500/10 hover:text-red-400 text-theme-muted transition">
@@ -291,7 +291,7 @@ export default function AdminResources() {
                   ].map(opt => (
                     <button type="button" key={opt.key}
                       onClick={() => setForm(f => ({ ...f, type: opt.key }))}
-                      className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl border text-xs font-semibold transition ${form.type === opt.key ? 'border-[#FFD700] text-[#FFD700] bg-[#FFD700]/10' : 'border-theme text-theme-secondary hover:border-theme-gold'}`}>
+                      className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl border text-xs font-semibold transition ${form.type === opt.key ? 'border-accent text-accent bg-accent/10' : 'border-theme text-theme-secondary hover:border-theme-gold'}`}>
                       {opt.icon} {opt.label}
                     </button>
                   ))}
@@ -318,7 +318,7 @@ export default function AdminResources() {
               ) : (
                 <div>
                   <label className="text-theme-muted text-xs font-semibold uppercase tracking-wide mb-1.5 block">File ({form.type})</label>
-                  <label className="flex items-center gap-3 p-3 border border-dashed border-theme rounded-xl cursor-pointer hover:border-[#FFD700]/40 transition input-bg">
+                  <label className="flex items-center gap-3 p-3 border border-dashed border-theme rounded-xl cursor-pointer hover:border-accent/40 transition input-bg">
                     <Upload size={16} className="text-theme-muted shrink-0" />
                     <span className="text-theme-secondary text-sm truncate">
                       {file ? file.name : (modal.resource && modal.resource.type !== 'link' ? 'Replace existing file' : `Upload an ${form.type}`)}
@@ -327,7 +327,7 @@ export default function AdminResources() {
                   </label>
                   {modal.resource?.url && modal.resource.type !== 'link' && !file && (
                     <a href={modal.resource.url} target="_blank" rel="noreferrer"
-                      className="inline-block mt-1.5 text-xs text-[#FFD700] hover:underline">
+                      className="inline-block mt-1.5 text-xs text-accent hover:underline">
                       View current file
                     </a>
                   )}
@@ -337,7 +337,7 @@ export default function AdminResources() {
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="isActive" checked={form.isActive}
                   onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))}
-                  className="w-4 h-4 accent-[#FFD700]" />
+                  className="w-4 h-4 accent-accent" />
                 <label htmlFor="isActive" className="text-theme-secondary text-sm">Visible to associates</label>
               </div>
 
@@ -347,7 +347,7 @@ export default function AdminResources() {
                   Cancel
                 </button>
                 <button type="submit" disabled={saving}
-                  className="flex-1 py-3 rounded-xl bg-[#FFD700] text-[#0A0A0A] font-bold hover:bg-[#E6C200] transition text-sm disabled:opacity-70">
+                  className="flex-1 py-3 rounded-xl bg-accent text-accent-contrast font-bold hover:bg-accent-hover transition text-sm disabled:opacity-70">
                   {uploading ? 'Uploading file...' : saving ? 'Saving...' : modal.resource ? 'Update Resource' : 'Add Resource'}
                 </button>
               </div>

@@ -113,7 +113,7 @@ export default function PosterManager({ category, title, description }) {
     load()
   }
 
-  const inputClass = "w-full input-bg border border-theme rounded-xl px-4 py-3 text-theme-primary text-sm placeholder-[var(--text-muted)] focus:border-[#FFD700]/60"
+  const inputClass = "w-full input-bg border border-theme rounded-xl px-4 py-3 text-theme-primary text-sm placeholder-[var(--text-muted)] focus:border-[#2563EB]/60"
 
   return (
     <div>
@@ -123,7 +123,7 @@ export default function PosterManager({ category, title, description }) {
           <p className="text-theme-muted text-xs mt-0.5">{description}</p>
         </div>
         <button onClick={openAdd}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFD700] text-[#0A0A0A] font-bold text-sm hover:bg-[#E6C200] transition shrink-0">
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#2563EB] text-white font-bold text-sm hover:bg-[#1D4ED8] transition shrink-0">
           <Plus size={16} /> Add Poster
         </button>
       </div>
@@ -144,14 +144,14 @@ export default function PosterManager({ category, title, description }) {
             <div key={p._id} className="bg-theme-card border border-theme rounded-2xl overflow-hidden flex flex-col">
               <div className="relative h-32 sm:h-36 bg-black/20 overflow-hidden">
                 <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover" />
-                <span className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${p.isActive ? 'bg-[#44DD88]/90 text-[#0A0A0A]' : 'bg-red-500/90 text-white'}`}>
+                <span className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${p.isActive ? 'bg-[#16A34A]/90 text-white' : 'bg-red-500/90 text-white'}`}>
                   {p.isActive ? 'Active' : 'Hidden'}
                 </span>
               </div>
               <div className="p-2.5 flex items-center justify-between gap-2">
                 <p className="text-theme-primary font-semibold text-xs line-clamp-1">{p.title || 'Untitled poster'}</p>
                 <div className="flex gap-1 shrink-0">
-                  <button onClick={() => openEdit(p)} className="p-1.5 rounded-lg bg-theme-tertiary hover:bg-[#FFD700]/10 hover:text-[#FFD700] text-theme-muted transition">
+                  <button onClick={() => openEdit(p)} className="p-1.5 rounded-lg bg-theme-tertiary hover:bg-[#2563EB]/10 hover:text-[#2563EB] text-theme-muted transition">
                     <Edit size={12} />
                   </button>
                   <button onClick={() => handleDelete(p._id)} className="p-1.5 rounded-lg bg-theme-tertiary hover:bg-red-500/10 hover:text-red-400 text-theme-muted transition">
@@ -181,7 +181,7 @@ export default function PosterManager({ category, title, description }) {
 
               <div>
                 <label className="text-theme-muted text-xs font-semibold uppercase tracking-wide mb-1.5 block">Poster Image</label>
-                <label className="flex items-center gap-3 p-3 border border-dashed border-theme rounded-xl cursor-pointer hover:border-[#FFD700]/40 transition input-bg">
+                <label className="flex items-center gap-3 p-3 border border-dashed border-theme rounded-xl cursor-pointer hover:border-[#2563EB]/40 transition input-bg">
                   <Upload size={16} className="text-theme-muted shrink-0" />
                   <span className="text-theme-secondary text-sm truncate">
                     {file ? file.name : (modal.poster ? 'Replace existing image' : 'Upload an image')}
@@ -190,7 +190,7 @@ export default function PosterManager({ category, title, description }) {
                 </label>
                 {modal.poster?.imageUrl && !file && (
                   <a href={modal.poster.imageUrl} target="_blank" rel="noreferrer"
-                    className="inline-block mt-1.5 text-xs text-[#FFD700] hover:underline">
+                    className="inline-block mt-1.5 text-xs text-[#2563EB] hover:underline">
                     View current image
                   </a>
                 )}
@@ -207,7 +207,7 @@ export default function PosterManager({ category, title, description }) {
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="isActive" checked={form.isActive}
                   onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))}
-                  className="w-4 h-4 accent-[#FFD700]" />
+                  className="w-4 h-4 accent-[#2563EB]" />
                 <label htmlFor="isActive" className="text-theme-secondary text-sm">Published (visible to site visitors)</label>
               </div>
 
@@ -217,7 +217,7 @@ export default function PosterManager({ category, title, description }) {
                   Cancel
                 </button>
                 <button type="submit" disabled={saving}
-                  className="flex-1 py-3 rounded-xl bg-[#FFD700] text-[#0A0A0A] font-bold hover:bg-[#E6C200] transition text-sm disabled:opacity-70">
+                  className="flex-1 py-3 rounded-xl bg-[#2563EB] text-white font-bold hover:bg-[#1D4ED8] transition text-sm disabled:opacity-70">
                   {uploading ? 'Uploading image...' : saving ? 'Saving...' : modal.poster ? 'Update Poster' : 'Add Poster'}
                 </button>
               </div>

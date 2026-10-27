@@ -98,8 +98,8 @@ export default function AdminQRCode() {
                   onClick={() => handleQuickUrl(path)}
                   className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition border
                     ${url === baseUrl + path
-                      ? 'bg-[#FFD700] text-[#0A0A0A] border-[#FFD700]'
-                      : 'input-bg text-theme-secondary border-theme hover:border-[#FFD700]/40 hover:text-theme-primary'
+                      ? 'bg-[#2563EB] text-white border-[#2563EB]'
+                      : 'input-bg text-theme-secondary border-theme hover:border-[#2563EB]/40 hover:text-theme-primary'
                     }`}
                 >
                   {label}
@@ -118,18 +118,18 @@ export default function AdminQRCode() {
                 value={url}
                 onChange={e => { setUrl(e.target.value); setGenerated(false) }}
                 placeholder="https://yourdomain.com"
-                className="w-full input-bg border border-theme rounded-xl pl-10 pr-4 py-3 text-theme-primary text-sm placeholder-[var(--text-muted)] focus:border-[#FFD700]/60"
+                className="w-full input-bg border border-theme rounded-xl pl-10 pr-4 py-3 text-theme-primary text-sm placeholder-[var(--text-muted)] focus:border-[#2563EB]/60"
               />
             </div>
             <div className="flex gap-2 mt-3">
               <button onClick={handleCopyUrl}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-theme-tertiary text-theme-secondary hover:text-theme-primary text-xs font-medium transition">
                 {copied
-                  ? <><CheckCircle size={12} className="text-[#44DD88]" /> Copied</>
+                  ? <><CheckCircle size={12} className="text-[#16A34A]" /> Copied</>
                   : <><Link size={12} /> Copy URL</>}
               </button>
               <button onClick={handleGenerate}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#FFD700]/10 text-[#FFD700] hover:bg-[#FFD700]/20 text-xs font-semibold transition">
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#2563EB]/10 text-[#2563EB] hover:bg-[#2563EB]/20 text-xs font-semibold transition">
                 <RefreshCw size={12} /> Generate
               </button>
             </div>
@@ -143,7 +143,7 @@ export default function AdminQRCode() {
                 <button key={value} onClick={() => setSize(value)}
                   className={`py-2.5 rounded-xl text-xs font-semibold transition border
                     ${size === value
-                      ? 'bg-[#FFD700] text-[#0A0A0A] border-[#FFD700]'
+                      ? 'bg-[#2563EB] text-white border-[#2563EB]'
                       : 'input-bg text-theme-secondary border-theme hover:border-theme-gold'
                     }`}>
                   {label}
@@ -155,7 +155,7 @@ export default function AdminQRCode() {
           {/* Action buttons */}
           <div className="grid grid-cols-2 gap-3">
             <button onClick={handleDownload}
-              className="flex items-center justify-center gap-2 bg-[#FFD700] text-[#0A0A0A] font-bold py-3.5 rounded-xl hover:bg-[#E6C200] transition text-sm">
+              className="flex items-center justify-center gap-2 bg-[#2563EB] text-white font-bold py-3.5 rounded-xl hover:bg-[#1D4ED8] transition text-sm">
               <Download size={16} /> Download PNG
             </button>
             <button onClick={handlePrint}
@@ -174,8 +174,8 @@ export default function AdminQRCode() {
           {generated ? (
             <>
               <div ref={qrRef}
-                className="bg-white p-5 rounded-2xl shadow-2xl shadow-[#FFD700]/10"
-                style={{ border: '3px solid #FFD700' }}>
+                className="bg-white p-5 rounded-2xl shadow-2xl shadow-[#2563EB]/10"
+                style={{ border: '3px solid #2563EB' }}>
                 <QRCodeCanvas
                   value={url || 'https://sbsindia.com'}
                   size={Math.min(size, 260)}
@@ -188,7 +188,7 @@ export default function AdminQRCode() {
 
               {/* SBS Branding */}
               <div className="text-center">
-                <div className="bg-[#FFD700] text-[#0A0A0A] font-black text-lg px-4 py-1.5 rounded-lg inline-block mb-2">SBS</div>
+                <div className="bg-[#2563EB] text-white font-black text-lg px-4 py-1.5 rounded-lg inline-block mb-2">SBS</div>
                 <p className="text-theme-primary font-bold text-sm">Sai Business Services</p>
                 <p className="text-theme-muted text-xs mt-0.5">We Find Your Way</p>
                 <p className="text-theme-muted text-xs mt-3 max-w-[200px] break-all">{url}</p>
@@ -203,8 +203,8 @@ export default function AdminQRCode() {
             </>
           ) : (
             <div className="flex flex-col items-center gap-4 py-10 text-center">
-              <div className="w-20 h-20 rounded-2xl bg-[#FFD700]/10 flex items-center justify-center">
-                <QrCode size={36} className="text-[#FFD700]/50" />
+              <div className="w-20 h-20 rounded-2xl bg-[#2563EB]/10 flex items-center justify-center">
+                <QrCode size={36} className="text-[#2563EB]/50" />
               </div>
               <p className="text-theme-secondary text-sm">Enter a URL and click Generate</p>
             </div>
