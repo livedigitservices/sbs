@@ -93,7 +93,7 @@ export default function Contact() {
                     <Store size={22} strokeWidth={1.5} style={{ color: FRANCHISE_COLOR }} />
                   </div>
                   <h2 className="text-theme-primary font-semibold text-xl leading-tight">
-                    Franchise Partners
+                    Service Provider
                   </h2>
                 </div>
 

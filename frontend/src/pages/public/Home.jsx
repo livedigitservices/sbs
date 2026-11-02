@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Users, ShieldCheck, UserPlus, LogIn, ArrowRight, Phone } from 'lucide-react'
+import GUIDANCE_IMG from '../../assets/guidance.jpg'
 
 // Same source images already used on each service's own page, so the
 // homepage preview looks consistent with where each card links to.
@@ -32,6 +33,13 @@ const SERVICE_CARDS = [
     title: 'Online Degrees',
     desc: 'BA · B.Com · BBA · BCA · MA · M.Com · MBA · MCA',
   },
+   {
+    to: '/guidance',
+    image: GUIDANCE_IMG,
+    tag: 'Find Your Right Path',
+    title: 'Guidance',
+    desc: 'Education | Careers | Admissions | Exams',
+  },
   {
     to: '/phd-admissions',
     image: PHD_IMG,
@@ -39,6 +47,7 @@ const SERVICE_CARDS = [
     title: 'Ph.D Admissions',
     desc: 'Full Time / Part Time / Online / Fully Funded / Research / Honorary Ph.D',
   },
+ 
 ]
 
 export default function Home() {
@@ -82,7 +91,7 @@ export default function Home() {
 
       {/* Services */}
       <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:py-10">
-        <div className="flex flex-row flex-wrap gap-2">
+        <div className="flex flex-row flex-wrap gap-2 pb-3">
           {SERVICE_CARDS.map(({ to, image, tag, title, desc }) => (
             <Link
               key={to}

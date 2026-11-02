@@ -8,6 +8,7 @@ import AssociateRoute from './components/associate/AssociateRoute'
 import Home from './pages/public/Home'
 import OnlineDegrees from './pages/public/OnlineDegrees'
 import PhdAdmissions from './pages/public/PhdAdmissions'
+import Guidance from './pages/public/Guidance'
 import Contact from './pages/public/Contact'
 import AssociateResources from './pages/public/AssociateResources'
 
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/online-degrees" element={<OnlineDegrees />} />
         <Route path="/phd-admissions" element={<PhdAdmissions />} />
+        <Route path="/guidance" element={<Guidance />} />
         <Route path="/associate-resources" element={<AssociateResources />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/associate/login" element={<AssociateLogin />} />
