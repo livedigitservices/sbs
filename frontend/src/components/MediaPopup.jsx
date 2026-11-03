@@ -57,13 +57,11 @@ export default function MediaPopup({ resource, onClose, onDownload, onShare }) {
         ) : (
           <img
             src={resource.url}
-            alt={resource.title}
+            alt="Media preview"
             style={{ width: '100%', maxHeight: '70dvh', objectFit: 'contain' }}
             className="rounded-xl"
           />
         )}
-
-        <p className="text-white text-sm font-medium text-center mt-3 line-clamp-1 px-2">{resource.title}</p>
 
         <div className="flex justify-center gap-3 mt-3 pb-1">
           <button onClick={() => onDownload(resource)} className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#FFD700] text-[#0A0A0A] text-xs font-bold hover:bg-[#FFE44D] transition">

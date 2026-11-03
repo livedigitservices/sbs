@@ -37,7 +37,7 @@ const SERVICE_CARDS = [
     to: '/guidance',
     image: GUIDANCE_IMG,
     tag: 'Find Your Right Path',
-    title: 'Guidance',
+    title: 'Online Guidance',
     desc: 'Education | Careers | Admissions | Exams',
   },
   {

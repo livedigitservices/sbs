@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 
 const resourceSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  category: { type: String, required: true, trim: true, default: 'General' },
+  // `title` and `category` are legacy, optional fields. New media is added
+  // without them; older records keep whatever they already had.
+  title: { type: String, trim: true, default: '' },
+  category: { type: String, trim: true, default: '' },
   type: { type: String, enum: ['image', 'video', 'link'], required: true },
   url: { type: String, required: true },
   // Only used when type === 'link' (e.g. YouTube, Instagram, Facebook, WhatsApp)
@@ -10,6 +12,7 @@ const resourceSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true },
 }, { timestamps: true });
 
-resourceSchema.index({ category: 1, createdAt: -1 });
+// Media is always listed newest-first.
+resourceSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('Resource', resourceSchema);

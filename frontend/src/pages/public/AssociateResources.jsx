@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import { Link } from 'react-router-dom'
-import { ArrowLeft, Download, Share2, X, Image as ImageIcon, Video as VideoIcon, Link2, Youtube, Instagram, Facebook, MessageCircle, ExternalLink } from 'lucide-react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
+import { Download, Share2, Play, Image as ImageIcon, Link2, Youtube, Instagram, Facebook, MessageCircle, ExternalLink } from 'lucide-react'
 import api from '../../api'
 import toast from 'react-hot-toast'
 import MediaPopup from '../../components/MediaPopup'
-import { RESOURCE_CATEGORY_LABELS } from '../../constants/coreServices'
+
+// How often (ms) the page quietly checks for newly added media while it is open.
+const REFRESH_INTERVAL = 30000
 
 const platformIcon = (platform, size = 14) => {
   switch (platform) {
@@ -16,26 +17,68 @@ const platformIcon = (platform, size = 14) => {
   }
 }
 
+const hostOf = (url) => {
+  try { return new URL(url).hostname.replace(/^www\./, '') } catch { return url }
+}
+
+// Newest first by creation time (the API already sorts this way; sorting again
+// here guarantees it even if the response is ever reordered).
+const newestFirst = (a, b) => {
+  const diff = new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+  if (diff !== 0) return diff
+  return String(b._id).localeCompare(String(a._id))
+}
+
+// Used only to detect whether anything changed between two background refreshes.
+const signature = (list) => list.map(r => `${r._id}:${r.updatedAt || ''}`).join('|')
+
+const fileNameFor = (resource) => {
+  try {
+    const last = decodeURIComponent(new URL(resource.url).pathname.split('/').pop() || '')
+    if (last) return last
+  } catch { /* fall through */ }
+  return 'media'
+}
+
 export default function AssociateResources() {
   const [resources, setResources] = useState([])
   const [loading, setLoading]     = useState(true)
   const [preview, setPreview]     = useState(null)
+  const lastSignature = useRef('')
 
+  // Initial load + silent refreshes (on an interval and whenever the tab becomes
+  // visible again) so new uploads appear without a manual page reload.
   useEffect(() => {
-    api.get('/resources')
-      .then(r => setResources(r.data))
-      .catch(() => setResources([]))
-      .finally(() => setLoading(false))
-  }, [])
+    let cancelled = false
 
-  // Categories on this page are the resource categories (core services plus
-  // any resource-only categories like Freelancer/WFH), in a fixed order. A
-  // resource only shows up here if its category matches one of these.
-  const grouped = useMemo(() => {
-    return RESOURCE_CATEGORY_LABELS
-      .map(label => [label, resources.filter(r => r.category === label)])
-      .filter(([, items]) => items.length > 0)
-  }, [resources])
+    const fetchResources = (isInitial) =>
+      api.get('/resources')
+        .then(r => {
+          if (cancelled) return
+          const list = [...r.data].sort(newestFirst)
+          const sig = signature(list)
+          if (sig !== lastSignature.current) {
+            lastSignature.current = sig
+            setResources(list)
+          }
+        })
+        .catch(() => { if (isInitial && !cancelled) setResources([]) })
+        .finally(() => { if (isInitial && !cancelled) setLoading(false) })
+
+    fetchResources(true)
+
+    const refreshIfVisible = () => { if (document.visibilityState === 'visible') fetchResources(false) }
+    const timer = setInterval(refreshIfVisible, REFRESH_INTERVAL)
+    document.addEventListener('visibilitychange', refreshIfVisible)
+    window.addEventListener('focus', refreshIfVisible)
+
+    return () => {
+      cancelled = true
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', refreshIfVisible)
+      window.removeEventListener('focus', refreshIfVisible)
+    }
+  }, [])
 
   useEffect(() => {
     if (preview) {
@@ -52,20 +95,20 @@ export default function AssociateResources() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = resource.title || 'resource'
+      a.download = fileNameFor(resource)
       document.body.appendChild(a)
       a.click()
       a.remove()
       window.URL.revokeObjectURL(url)
     } catch {
-      window.open(resource.url, '_blank')
+      window.open(resource.url, '_blank', 'noopener,noreferrer')
     }
   }
 
   const handleShare = async (resource) => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: resource.title, url: resource.url })
+        await navigator.share({ url: resource.url })
       } catch {}
       return
     }
@@ -77,6 +120,9 @@ export default function AssociateResources() {
     }
   }
 
+  // One flat, newest-first list — no category / service / title headings.
+  const items = useMemo(() => resources, [resources])
+
   return (
     <div className="page-enter bg-theme-primary min-h-screen">
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -87,73 +133,18 @@ export default function AssociateResources() {
               <div key={i} className="bg-theme-card border border-theme rounded-2xl h-44 animate-pulse" />
             ))}
           </div>
-        ) : resources.length === 0 ? (
+        ) : items.length === 0 ? (
           <div className="text-center py-20">
             <ImageIcon size={40} className="text-gray-400 mx-auto mb-4" />
             <p className="text-theme-secondary">No resources available yet.</p>
           </div>
         ) : (
-          <div className="space-y-12">
-            {grouped.map(([category, items]) => {
-              const videos = items.filter(r => r.type === 'video')
-              const images = items.filter(r => r.type === 'image')
-              const links  = items.filter(r => r.type === 'link')
-
-              return (
-                <div key={category}>
-                  <h1 className="text-theme-primary font-black text-xl mb-5 pb-2 border-b border-theme">{category}</h1>
-
-                  {videos.length > 0 && (
-                    <div className="mb-10">
-                      <h2 className="text-theme-primary font-bold text-base mb-4 flex items-center gap-2">
-                        <VideoIcon size={16} className="text-[#FFD700]" /> Videos
-                      </h2>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                        {videos.map(r => (
-                          <ResourceCard key={r._id} resource={r} onPreview={setPreview} onDownload={handleDownload} onShare={handleShare} compact />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {images.length > 0 && (
-                    <div className="mb-10">
-                      <h2 className="text-theme-primary font-bold text-base mb-4 flex items-center gap-2">
-                        <ImageIcon size={16} className="text-[#FFD700]" /> Images & Posters
-                      </h2>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                        {images.map(r => (
-                          <ResourceCard key={r._id} resource={r} onPreview={setPreview} onDownload={handleDownload} onShare={handleShare} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {links.length > 0 && (
-                    <div>
-                      <h2 className="text-theme-primary font-bold text-base mb-4 flex items-center gap-2">
-                        <Link2 size={16} className="text-[#FFD700]" /> Social Links
-                      </h2>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                        {links.map(r => (
-                          <a key={r._id} href={r.url} target="_blank" rel="noreferrer"
-                            className="bg-theme-card border border-theme rounded-2xl p-4 flex items-center gap-3 card-hover">
-                            <span className="w-10 h-10 rounded-xl bg-[#FFD700]/10 text-[#FFD700] flex items-center justify-center shrink-0">
-                              {platformIcon(r.platform, 18)}
-                            </span>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-theme-primary font-semibold text-sm line-clamp-1">{r.title}</p>
-                              <p className="text-theme-muted text-xs">{r.platform || 'Link'}</p>
-                            </div>
-                            <ExternalLink size={14} className="text-theme-muted shrink-0" />
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 items-start">
+            {items.map(r => (
+              r.type === 'link'
+                ? <LinkCard key={r._id} resource={r} />
+                : <MediaCard key={r._id} resource={r} onPreview={setPreview} onDownload={handleDownload} onShare={handleShare} />
+            ))}
           </div>
         )}
       </div>
@@ -169,36 +160,53 @@ export default function AssociateResources() {
   )
 }
 
-function ResourceCard({ resource: r, onPreview, onDownload, onShare, compact = false }) {
+function LinkCard({ resource: r }) {
+  return (
+    <a href={r.url} target="_blank" rel="noopener noreferrer"
+      className="bg-theme-card border border-theme rounded-2xl p-4 flex flex-col items-center justify-center gap-2 text-center card-hover min-h-[10rem]">
+      <span className="w-12 h-12 rounded-xl bg-[#FFD700]/10 text-[#FFD700] flex items-center justify-center shrink-0">
+        {platformIcon(r.platform, 22)}
+      </span>
+      <span className="text-theme-primary font-semibold text-sm">{r.platform || 'Link'}</span>
+      <span className="text-theme-muted text-[11px] max-w-full truncate">{hostOf(r.url)}</span>
+      <span className="text-[#FFD700] text-[11px] font-semibold flex items-center gap-1">Open <ExternalLink size={11} /></span>
+    </a>
+  )
+}
+
+function MediaCard({ resource: r, onPreview, onDownload, onShare }) {
   return (
     <div className="bg-theme-card border border-theme rounded-2xl overflow-hidden flex flex-col card-hover">
       <button
         onClick={() => onPreview(r)}
-        className={`relative ${compact ? 'h-28 sm:h-32' : 'h-32 sm:h-36'} bg-black/20 w-full overflow-hidden`}
+        aria-label={r.type === 'video' ? 'Play video' : 'View image'}
+        className="relative block w-full bg-black/20 overflow-hidden"
       >
         {r.type === 'video' ? (
-          <video src={r.url} className="w-full h-full object-cover" muted />
+          // Videos keep a 16:9 frame; `contain` shows portrait clips without cropping.
+          <div className="aspect-video bg-black">
+            <video src={r.url} className="w-full h-full object-contain" muted playsInline preload="metadata" />
+            <span className="absolute inset-0 flex items-center justify-center">
+              <span className="w-10 h-10 rounded-full bg-black/60 border border-white/30 text-white flex items-center justify-center">
+                <Play size={16} className="ml-0.5" />
+              </span>
+            </span>
+          </div>
         ) : (
-          <img src={r.url} alt={r.title} className="w-full h-full object-cover" />
+          // Images render at their natural aspect ratio — never cropped or stretched.
+          <img src={r.url} alt="" loading="lazy" className="block w-full h-auto min-h-[6rem]" />
         )}
-        <span className="absolute top-1.5 right-1.5 bg-black/60 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full flex items-center gap-1">
-          {r.type === 'video' ? <VideoIcon size={9} /> : <ImageIcon size={9} />}
-          {r.type}
-        </span>
       </button>
-      <div className={`${compact ? 'p-2.5 gap-2' : 'p-4 gap-3'} flex flex-col flex-1`}>
-        <p className={`text-theme-primary font-semibold ${compact ? 'text-xs' : 'text-sm'} line-clamp-2`}>{r.title}</p>
-        <div className="flex gap-1.5 mt-auto">
-          <button onClick={() => onDownload(r)}
-            className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-[#FFD700] text-[#0A0A0A] font-bold hover:bg-[#FFE44D] transition ${compact ? 'py-1.5 text-[11px]' : 'py-2 text-xs'}`}>
-            <Download size={compact ? 11 : 13} /> Download
-          </button>
-          <button onClick={() => onShare(r)}
-            title="Share"
-            className={`flex items-center justify-center rounded-lg border border-theme text-theme-secondary font-semibold hover:text-theme-primary hover:border-theme-gold transition ${compact ? 'px-2 py-1.5' : 'px-3 py-2 text-xs'}`}>
-            <Share2 size={compact ? 11 : 13} />
-          </button>
-        </div>
+      <div className="p-2 flex gap-1.5">
+        <button onClick={() => onDownload(r)}
+          className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-[#FFD700] text-[#0A0A0A] font-bold hover:bg-[#FFE44D] transition py-1.5 text-[11px]">
+          <Download size={11} /> Download
+        </button>
+        <button onClick={() => onShare(r)}
+          title="Share" aria-label="Share"
+          className="flex items-center justify-center rounded-lg border border-theme text-theme-secondary font-semibold hover:text-theme-primary hover:border-theme-gold transition px-2 py-1.5">
+          <Share2 size={11} />
+        </button>
       </div>
     </div>
   )

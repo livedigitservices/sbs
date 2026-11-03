@@ -7,9 +7,27 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Newest media first. `_id` is the tie-breaker for records created in the same
+// millisecond (ObjectIds increase over time, so it keeps the order stable).
+const NEWEST_FIRST = { createdAt: -1, _id: -1 };
+
+// Media lists must always reflect the latest uploads, so stop browsers / CDNs
+// (incl. Vercel's edge) from serving a cached copy.
+const noStore = (res) => res.set('Cache-Control', 'no-store, max-age=0');
+
+const isHttpUrl = (value) => {
+  try {
+    const u = new URL(value);
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 exports.getResources = async (req, res) => {
   try {
-    const resources = await Resource.find({ isActive: true }).sort({ category: 1, createdAt: -1 });
+    const resources = await Resource.find({ isActive: true }).sort(NEWEST_FIRST);
+    noStore(res);
     res.json(resources);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -18,7 +36,8 @@ exports.getResources = async (req, res) => {
 
 exports.getAllResources = async (req, res) => {
   try {
-    const resources = await Resource.find().sort({ category: 1, createdAt: -1 });
+    const resources = await Resource.find().sort(NEWEST_FIRST);
+    noStore(res);
     res.json(resources);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -60,18 +79,17 @@ exports.getUploadSignature = async (req, res) => {
 
 exports.createResource = async (req, res) => {
   try {
-    const { title, category, type, url, platform, isActive } = req.body;
+    const { type, url, platform, isActive } = req.body;
 
-    if (!category || !category.trim()) return res.status(400).json({ message: 'Category is required' });
-    if (!['image', 'video', 'link'].includes(type)) return res.status(400).json({ message: 'Invalid resource type' });
-    if (!url || !url.trim()) return res.status(400).json({ message: 'A file or URL is required' });
+    if (!['image', 'video', 'link'].includes(type)) return res.status(400).json({ message: 'Invalid media type' });
+    if (!url || !String(url).trim()) return res.status(400).json({ message: 'A file or URL is required' });
+    if (!isHttpUrl(String(url).trim())) return res.status(400).json({ message: 'Please provide a valid http(s) URL' });
 
+    // Title / category are intentionally not collected any more.
     const resource = await Resource.create({
-      title,
-      category: category.trim(),
       type,
-      url: url.trim(),
-      platform: type === 'link' ? (platform || '').trim() : '',
+      url: String(url).trim(),
+      platform: type === 'link' ? String(platform || '').trim() : '',
       ...(isActive !== undefined ? { isActive } : {}),
     });
     res.status(201).json(resource);
@@ -82,15 +100,26 @@ exports.createResource = async (req, res) => {
 
 exports.updateResource = async (req, res) => {
   try {
-    const { title, category, type, url, platform, isActive } = req.body;
-    const update = { title, isActive };
+    const { type, url, platform, isActive } = req.body;
+    const update = {};
 
-    if (category && category.trim()) update.category = category.trim();
-    if (type) update.type = type;
-    if (url && url.trim()) update.url = url.trim();
-    update.platform = type === 'link' ? (platform || '').trim() : '';
+    // Only touch fields that were actually sent, so legacy title / category
+    // values on older records are never wiped by an edit.
+    if (type !== undefined) {
+      if (!['image', 'video', 'link'].includes(type)) return res.status(400).json({ message: 'Invalid media type' });
+      update.type = type;
+    }
+    if (url !== undefined) {
+      if (!String(url).trim() || !isHttpUrl(String(url).trim())) return res.status(400).json({ message: 'Please provide a valid http(s) URL' });
+      update.url = String(url).trim();
+    }
+    if (isActive !== undefined) update.isActive = isActive;
+    if (type !== undefined || platform !== undefined) {
+      update.platform = (type === undefined || type === 'link') ? String(platform || '').trim() : '';
+    }
 
-    const resource = await Resource.findByIdAndUpdate(req.params.id, update, { new: true });
+    const resource = await Resource.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true });
+    if (!resource) return res.status(404).json({ message: 'Media not found' });
     res.json(resource);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -99,8 +128,9 @@ exports.updateResource = async (req, res) => {
 
 exports.deleteResource = async (req, res) => {
   try {
-    await Resource.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Resource deleted' });
+    const deleted = await Resource.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ message: 'Media not found' });
+    res.json({ message: 'Media deleted' });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
