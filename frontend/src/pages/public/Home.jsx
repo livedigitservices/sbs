@@ -20,6 +20,20 @@ const PAGE_BG = 'linear-gradient(180deg, #1E63B8 0%, #123A7A 45%, #0A1E3F 100%)'
 
 const SERVICE_CARDS = [
   {
+  to: '/online-reseller',
+  image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=80',
+  tag: 'Earn Smater',
+  title: 'Online Business',
+  desc: 'Bulk SMS | WhatsApp | AI | Ionizers | Agri',
+},
+{
+  to: '/online-admissions',
+  image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1600&q=80',
+  tag: 'Top Rated Colleges',
+  title: 'Online Admissions',
+  desc: 'Medical | Engineering | Pharma | Agriculture | Management | Ayush',
+},
+  {
     to: '/tutors',
     image: TUTOR_IMG,
     tag: 'Find your expert',
@@ -44,7 +58,7 @@ const SERVICE_CARDS = [
     to: '/phd-admissions',
     image: PHD_IMG,
     tag: 'Add Dr. to your name',
-    title: 'Ph.D Admissions',
+    title: 'Online Ph.D',
     desc: 'Full Time / Part Time / Online / Fully Funded / Research / Honorary Ph.D',
   },
  

@@ -11,6 +11,9 @@ import PhdAdmissions from './pages/public/PhdAdmissions'
 import Guidance from './pages/public/Guidance'
 import Contact from './pages/public/Contact'
 import AssociateResources from './pages/public/AssociateResources'
+import OnlineReseller from './pages/public/OnlineReseller'
+import OnlineAdmissions from './pages/public/OnlineAdmissions'
+import Tutors from './pages/public/Tutors'
 
 import AdminLogin from './pages/admin/AdminLogin'
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -20,15 +23,14 @@ import AdminSettings from './pages/admin/AdminSettings'
 import AdminContacts from './pages/admin/AdminContacts'
 import AdminFranchisePartners from './pages/admin/AdminFranchisePartners'
 import AdminAssociates from './pages/admin/AdminAssociates'
+import AdminFreelancePosters from './pages/admin/AdminFreelancePosters'
+import AdminRegistrationLinks from './pages/admin/AdminRegistrationLinks'
+import AdminTutors from './pages/admin/AdminTutors'
+
 import AssociateLogin from './pages/associate/AssociateLogin'
 import AssociateRegister from './pages/associate/AssociateRegister'
 import AssociateLeads from './pages/associate/AssociateLeads'
 import AssociateTutors from './pages/associate/AssociateTutors'
-import AdminFreelancePosters from './pages/admin/AdminFreelancePosters'
-import AdminRegistrationLinks from './pages/admin/AdminRegistrationLinks'
-import Tutors from './pages/public/Tutors'
-import AdminTutors from './pages/admin/AdminTutors'
-
 
 export default function App() {
   return (
@@ -45,6 +47,8 @@ export default function App() {
         <Route path="/associate/register" element={<AssociateRegister />} />
         <Route path="/associate/register/:token" element={<AssociateRegister />} />
         <Route path="/tutors" element={<Tutors />} />
+        <Route path="/online-reseller" element={<OnlineReseller />} />
+        <Route path="/online-admissions" element={<OnlineAdmissions />} />
 
         {/* Associate protected — same navbar/footer chrome as the rest of the public site */}
         <Route path="/associate" element={<AssociateRoute><AssociateLayout /></AssociateRoute>}>

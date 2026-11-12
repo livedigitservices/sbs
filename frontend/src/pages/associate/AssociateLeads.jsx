@@ -88,9 +88,7 @@ export default function AssociateLeads() {
   return (
     <div>
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
-        <div>
-          <h1 className="text-theme-primary font-black text-2xl">My Leads</h1>
-        </div>
+       
         <button onClick={openAdd}
           className="flex items-center gap-2 bg-[#2563EB] text-[#f2f0f0] font-bold px-4 py-2.5 rounded-xl hover:bg-[#185bed] transition text-sm">
           <Plus size={16} /> Add Lead
