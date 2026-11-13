@@ -85,10 +85,18 @@ export default function PublicLayout() {
       </main>
 
       {/* ── FOOTER ── */}
-      <footer className="bg-[#2563EB] text-white t  ext-sm font-semibold px-3 py-3 flex items-center justify-center gap-2">
-        <YouTubeIcon size={24} />
-        <span>@sbsEdu-News</span>
-      </footer>
+      <footer className="bg-[#2563EB] text-white text-sm font-semibold">
+  <a
+    href="https://www.youtube.com/@sbsEdu-News"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Visit our YouTube channel"
+    className="px-3 py-3 flex items-center justify-center gap-2 hover:bg-[#1D4ED8] transition-colors"
+  >
+    <YouTubeIcon size={24} />
+    <span>@sbsEdu-News</span>
+  </a>
+</footer>
     </div>
   )
 }

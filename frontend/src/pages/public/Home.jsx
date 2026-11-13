@@ -24,7 +24,7 @@ const SERVICE_CARDS = [
   image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=80',
   tag: 'Earn Smater',
   title: 'Online Business',
-  desc: 'Bulk SMS | WhatsApp | AI | Ionizers | Agri',
+  desc: 'Bulk SMS | WhatsApp | AI | Ionizers | Agri | Many',
 },
 {
   to: '/online-admissions',
