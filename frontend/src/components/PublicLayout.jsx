@@ -41,16 +41,24 @@ export default function PublicLayout() {
   const iconBtn = 'text-white hover:bg-white/15'
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8F7F2]"
-      style={{ paddingTop: 0, paddingBottom: 0 }}>
-
+    <div
+      className="min-h-screen flex flex-col bg-[#F8F7F2]"
+      style={{ paddingTop: 0, paddingBottom: 0 }}
+    >
       {/* ── NAVBAR ── */}
       <nav
         className="fixed top-0 left-0 right-0 z-50 backdrop-blur transition-colors duration-300"
         style={{ backgroundColor: NAVY_BLUE }}
       >
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
-          <p className='font-extrabold text-3xl text-amber-50' >www.sbs.ind.in</p>
+          <div className="flex flex-col items-center leading-tight">
+            <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-amber-50/80">
+              sbs online academy
+            </span>
+            <p className="font-extrabold text-2xl sm:text-3xl text-amber-50">
+              www.sbs.ind.in
+            </p>
+          </div>
 
           <div className="flex items-center gap-2">
             {/* Home */}
@@ -79,24 +87,24 @@ export default function PublicLayout() {
       </nav>
 
       {/* ── PAGE CONTENT ── */}
-      {/* pt-16 = navbar height */}
-      <main className="flex-1 pt-16">
+      {/* pt-16 = navbar height, pb-12 = footer height */}
+      <main className="flex-1 pt-16 pb-12">
         <Outlet />
       </main>
 
-      {/* ── FOOTER ── */}
-      <footer className="bg-[#2563EB] text-white text-sm font-semibold">
-  <a
-    href="https://www.youtube.com/@sbsEdu-News"
-    target="_blank"
-    rel="noopener noreferrer"
-    aria-label="Visit our YouTube channel"
-    className="px-3 py-3 flex items-center justify-center gap-2 hover:bg-[#1D4ED8] transition-colors"
-  >
-    <YouTubeIcon size={24} />
-    <span>@sbsEdu-News</span>
-  </a>
-</footer>
+      {/* ── FOOTER (sticky at bottom) ── */}
+      <footer className="fixed bottom-0 left-0 right-0 z-50 bg-[#2563EB] text-white text-sm font-semibold">
+        <a
+          href="https://www.youtube.com/@sbsEdu-News"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Visit our YouTube channel"
+          className="px-3 py-3 flex items-center justify-center gap-2 hover:bg-[#1D4ED8] transition-colors"
+        >
+          <YouTubeIcon size={24} />
+          <span>@sbsEdu-News</span>
+        </a>
+      </footer>
     </div>
   )
 }
