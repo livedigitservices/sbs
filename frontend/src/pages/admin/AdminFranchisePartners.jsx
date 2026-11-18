@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Plus, Edit, Trash2, X, User, Phone, ChevronDown, ChevronUp, Store } from 'lucide-react'
+import { Plus, Edit, Trash2, X, User, Phone, MapPin, Briefcase, ChevronDown, ChevronUp, Store } from 'lucide-react'
 import api from '../../api'
 import toast from 'react-hot-toast'
 import { normalizeCards } from '../../utils/franchise'
@@ -10,7 +10,7 @@ const labelClass = "text-theme-muted text-xs font-semibold uppercase tracking-wi
 const addBtnClass = "flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition"
 const removeBtnClass = "p-2 rounded-lg text-theme-muted hover:text-red-400 hover:bg-red-500/10 transition shrink-0"
 
-const emptyPerson = () => ({ name: '', phones: [''] })
+const emptyPerson = () => ({ name: '', location: '', services: '', phones: [''] })
 const emptyForm = () => ({ persons: [emptyPerson()] })
 
 export default function AdminFranchisePartners() {
@@ -33,7 +33,7 @@ export default function AdminFranchisePartners() {
   const openEdit = (c) => {
     setForm({
       persons: c.persons.length
-        ? c.persons.map(p => ({ name: p.name || '', phones: p.phones?.length ? [...p.phones] : [''] }))
+        ? c.persons.map(p => ({ name: p.name || '', location: p.location || '', services: p.services || '', phones: p.phones?.length ? [...p.phones] : [''] }))
         : [emptyPerson()],
     })
     setModal({ open: true, card: c })
@@ -50,6 +50,7 @@ export default function AdminFranchisePartners() {
   const addPerson = () => setForm(f => ({ ...f, persons: [emptyPerson(), ...f.persons] }))
   const removePerson = (pi) => setForm(f => ({ ...f, persons: f.persons.filter((_, i) => i !== pi) }))
   const setName = (pi, v) => patchPerson(pi, p => ({ ...p, name: v }))
+  const setField = (pi, field, v) => patchPerson(pi, p => ({ ...p, [field]: v }))
 
   const addPhone = (pi) => patchPerson(pi, p => ({ ...p, phones: [...p.phones, ''] }))
   const setPhone = (pi, xi, v) => patchPerson(pi, p => ({ ...p, phones: p.phones.map((x, i) => (i === xi ? v : x)) }))
@@ -60,6 +61,8 @@ export default function AdminFranchisePartners() {
     for (const [i, p] of form.persons.entries()) {
       const who = p.name.trim() || `Person ${i + 1}`
       if (!p.name.trim()) { toast.error(`Enter a name for person ${i + 1}`); return false }
+      if (!p.location.trim()) { toast.error(`Enter a location for ${who}`); return false }
+      if (!p.services.trim()) { toast.error(`Enter services / business for ${who}`); return false }
       if (!p.phones.some(x => x.trim())) { toast.error(`Add at least one mobile number for ${who}`); return false }
     }
     return true
@@ -72,6 +75,8 @@ export default function AdminFranchisePartners() {
     const payload = {
       persons: form.persons.map(p => ({
         name: p.name.trim(),
+        location: p.location.trim(),
+        services: p.services.trim(),
         phones: p.phones.map(x => x.trim()).filter(Boolean),
       })),
     }
@@ -156,6 +161,16 @@ export default function AdminFranchisePartners() {
                         <p className="text-theme-primary font-semibold text-sm flex items-center gap-1.5">
                           <User size={13} className="text-theme-muted" />{p.name}
                         </p>
+                        {p.location && (
+                          <p className="text-theme-secondary text-xs flex items-start gap-1.5">
+                            <MapPin size={11} className="mt-0.5 shrink-0" /><span className="break-words min-w-0">{p.location}</span>
+                          </p>
+                        )}
+                        {p.services && (
+                          <p className="text-theme-secondary text-xs flex items-start gap-1.5">
+                            <Briefcase size={11} className="mt-0.5 shrink-0" /><span className="break-words min-w-0">{p.services}</span>
+                          </p>
+                        )}
                         {p.phones.map((ph, xi) => (
                           <p key={xi} className="text-theme-secondary font-mono text-xs flex items-center gap-1.5">
                             <Phone size={11} />{ph}
@@ -191,13 +206,20 @@ export default function AdminFranchisePartners() {
                 {form.persons.map((p, pi) => (
                   <div key={pi} className="border border-theme rounded-xl p-4 space-y-4 bg-theme-tertiary/40">
                     <div className="flex items-center gap-2">
-                      <input type="text" placeholder="Person name" value={p.name}
+                      <input type="text" placeholder="Name" value={p.name} maxLength={80}
                         onChange={e => setName(pi, e.target.value)} className={smallInputClass} required />
                       {form.persons.length > 1 && (
                         <button type="button" onClick={() => removePerson(pi)} title="Remove this person" className={removeBtnClass}>
                           <Trash2 size={14} />
                         </button>
                       )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <input type="text" placeholder="Location" value={p.location} maxLength={120}
+                        onChange={e => setField(pi, 'location', e.target.value)} className={smallInputClass} required />
+                      <input type="text" placeholder="Services / Business" value={p.services} maxLength={300}
+                        onChange={e => setField(pi, 'services', e.target.value)} className={smallInputClass} required />
                     </div>
 
                     <div className="space-y-2">

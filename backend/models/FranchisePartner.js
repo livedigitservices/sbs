@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 
-// A franchise person inside a state card: just a name and mobile number(s).
+// A franchise person inside a state card: name, location, services/business and mobile number(s).
 const personSchema = new mongoose.Schema({
-  name:   { type: String, required: true, trim: true },
+  name:     { type: String, required: true, trim: true },
+  location: { type: String, trim: true, default: '' },
+  services: { type: String, trim: true, default: '' },
   phones: {
     type: [String],
     validate: {

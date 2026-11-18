@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Phone, MapPin, Store } from 'lucide-react'
+import { Phone, MapPin, Store, Briefcase } from 'lucide-react'
 import api from '../../api'
 import { normalizeCards } from '../../utils/franchise'
 
@@ -21,22 +21,42 @@ function PersonCard({ person }) {
 
   return (
     <div className="bg-theme-card border border-theme rounded-2xl overflow-hidden flex flex-col transition-shadow duration-300 hover:shadow-[0_12px_32px_rgba(37,99,235,0.10)]">
-      {/* Person name on the left, mobile number(s) on the right */}
-      <div className="px-4 sm:px-5 py-3.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 mt-auto">
-        <span className="text-theme-primary font-semibold text-sm">{person.name}</span>
-        <div className="flex flex-col items-end gap-1 ml-auto">
-          {phones.map((ph, i) => (
-            <a
-              key={i}
-              href={`tel:${cleanPhone(ph)}`}
-              className="inline-flex items-center gap-1.5 text-sm font-mono transition-opacity hover:opacity-70"
-              style={{ color: FRANCHISE_COLOR }}
-            >
-              <Phone size={12} strokeWidth={2} />
-              {ph}
-            </a>
-          ))}
+      <div className="px-4 sm:px-5 py-3.5 space-y-2.5">
+        {/* Name on the left, mobile number(s) on the right */}
+        <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+          <span className="text-theme-primary font-semibold text-sm break-words min-w-0">{person.name}</span>
+          <div className="flex flex-col items-end gap-1 ml-auto">
+            {phones.map((ph, i) => (
+              <a
+                key={i}
+                href={`tel:${cleanPhone(ph)}`}
+                className="inline-flex items-center gap-1.5 text-sm font-mono transition-opacity hover:opacity-70"
+                style={{ color: FRANCHISE_COLOR }}
+              >
+                <Phone size={12} strokeWidth={2} />
+                {ph}
+              </a>
+            ))}
+          </div>
         </div>
+
+        {/* Location + Services / Business */}
+        {(person.location || person.services) && (
+          <div className="pt-2.5 border-t border-theme space-y-1.5">
+            {person.location && (
+              <p className="flex items-start gap-2 text-xs text-theme-secondary">
+                <MapPin size={13} className="shrink-0 mt-0.5" style={{ color: FRANCHISE_COLOR }} />
+                <span className="break-words min-w-0">{person.location}</span>
+              </p>
+            )}
+            {person.services && (
+              <p className="flex items-start gap-2 text-xs text-theme-secondary">
+                <Briefcase size={13} className="shrink-0 mt-0.5" style={{ color: FRANCHISE_COLOR }} />
+                <span className="break-words min-w-0">{person.services}</span>
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -172,7 +192,6 @@ export default function Contact() {
               )
             })}
 
-            
           </div>
         )}
       </div>

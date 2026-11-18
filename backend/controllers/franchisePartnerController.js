@@ -1,8 +1,8 @@
 const FranchisePartner = require('../models/FranchisePartner');
 
 // ── Output shape ─────────────────────────────────────────────────────────────
-// Only name + mobile numbers are returned. Old records (single `phone`, areas,
-// PIN codes) still work: the old fields are ignored and nothing is rewritten.
+// Returns name, location, services and mobile numbers. Old records (single
+// `phone`, no location/services) still work: missing fields come back empty.
 const normalize = (doc) => {
   const s = typeof doc.toObject === 'function' ? doc.toObject() : { ...doc };
   return {
@@ -13,6 +13,8 @@ const normalize = (doc) => {
     updatedAt: s.updatedAt,
     persons: (s.persons || []).map((p) => ({
       name: p.name,
+      location: p.location || '',
+      services: p.services || '',
       phones: p.phones && p.phones.length ? p.phones : (p.phone ? [p.phone] : []),
     })),
   };
@@ -23,6 +25,8 @@ const cleanPersons = (list) =>
   (Array.isArray(list) ? list : [])
     .map((p) => ({
       name: String(p?.name || '').trim(),
+      location: String(p?.location || '').trim().slice(0, 120),
+      services: String(p?.services || '').trim().slice(0, 300),
       phones: (Array.isArray(p?.phones) ? p.phones : []).map((x) => String(x).trim()).filter(Boolean),
     }))
     .filter((p) => p.name || p.phones.length);
