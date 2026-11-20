@@ -166,3 +166,23 @@ input:focus, select:focus, textarea:focus {
   50%     { box-shadow: 0 0 0 10px rgba(37,211,102,0); }
 }
 .pulse-call { animation: pulse-call 2.2s infinite; }
+
+/* ─── NOTIFICATION TICKER (Home page) ─── */
+@keyframes notice-scroll {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+.notice-track {
+  animation: notice-scroll var(--notice-duration, 20s) linear infinite;
+  will-change: transform;
+}
+.notice-viewport {
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 86%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 86%, transparent 100%);
+}
+.notice-viewport:hover .notice-track,
+.notice-viewport:active .notice-track { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .notice-track { animation: none; }
+  .notice-viewport { overflow-y: auto; }
+}

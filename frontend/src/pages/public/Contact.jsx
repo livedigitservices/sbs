@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react'
-import { Phone, MapPin, Store, Briefcase } from 'lucide-react'
+import React, { useState, useEffect, useMemo } from 'react'
+import { Phone, MapPin, Store, Briefcase, SearchX } from 'lucide-react'
 import api from '../../api'
 import { normalizeCards } from '../../utils/franchise'
+import SearchBar from '../../components/SearchBar'
 
 const STATE_COLORS = ['#4488FF', '#FF4444', '#44DD88', '#FFD700', '#FF88AA', '#AA88FF']
 const FRANCHISE_COLOR = '#2563EB'
@@ -15,6 +16,9 @@ const cleanPhone = (raw) => {
   const digits = trimmed.replace(/\D/g, '')
   return hasPlus ? `+${digits}` : digits
 }
+
+const norm = (s) => (s || '').toString().toLowerCase().trim()
+const onlyDigits = (s) => (s || '').toString().replace(/\D/g, '')
 
 function PersonCard({ person }) {
   const phones = person.phones || []
@@ -66,6 +70,7 @@ export default function Contact() {
   const [contacts, setContacts] = useState([])
   const [franchisePartners, setFranchisePartners] = useState([])
   const [loading, setLoading] = useState(true)
+  const [query, setQuery] = useState('')
 
   useEffect(() => {
     Promise.all([
@@ -74,6 +79,45 @@ export default function Contact() {
     ]).finally(() => setLoading(false))
   }, [])
 
+  const { partners, states } = useMemo(() => {
+    // Attach the original index so each state keeps its colour while filtering.
+    const indexed = (Array.isArray(contacts) ? contacts : []).map((c, i) => ({ ...c, _ci: i }))
+
+    const q = norm(query)
+    if (!q) return { partners: franchisePartners, states: indexed }
+
+    const qd = onlyDigits(query)
+    const hit = (values = [], phones = []) =>
+      values.some((v) => norm(v).includes(q)) ||
+      (qd.length >= 3 && phones.some((p) => onlyDigits(p).includes(qd)))
+
+    const partners = franchisePartners
+      .map((card) => ({
+        ...card,
+        persons: card.persons.filter((p) =>
+          hit([p.name, p.location, p.services, 'service provider'], p.phones)
+        ),
+      }))
+      .filter((card) => card.persons.length > 0)
+
+    const states = indexed
+      .map((sc) => {
+        if (hit([sc.state])) return sc
+        const districts = (sc.districts || [])
+          .map((d) => {
+            if (hit([d.district])) return d
+            return { ...d, persons: (d.persons || []).filter((p) => hit([p.name], [p.phone])) }
+          })
+          .filter((d) => (d.persons || []).length > 0)
+        return { ...sc, districts }
+      })
+      .filter((sc) => (sc.districts || []).length > 0)
+
+    return { partners, states }
+  }, [query, contacts, franchisePartners])
+
+  const noResults = !loading && query.trim() && partners.length === 0 && states.length === 0
+
   return (
     <div
       className="page-enter bg-theme-primary overflow-y-hidden"
@@ -81,7 +125,7 @@ export default function Contact() {
     >
       <div className="max-w-4xl mx-auto px-4 py-8 h-full overflow-y-auto scrollbar-hide">
 
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-5">
           <div
             className="w-11 h-11 shrink-0 rounded-xl flex items-center justify-center"
             style={{ background: 'rgba(255,68,68,0.08)' }}
@@ -93,17 +137,38 @@ export default function Contact() {
           </h1>
         </div>
 
+        <SearchBar
+          value={query}
+          onChange={setQuery}
+          placeholder="Search by name, location, service or number..."
+          className="mb-6"
+        />
+
         {loading ? (
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="bg-theme-card border border-theme rounded-2xl h-48 animate-pulse" />
             ))}
           </div>
+        ) : noResults ? (
+          <div className="bg-theme-card border border-theme rounded-2xl py-12 px-4 flex flex-col items-center text-center gap-2">
+            <SearchX size={28} className="text-theme-muted" />
+            <p className="text-theme-primary font-semibold text-sm">No contacts found</p>
+            <p className="text-theme-secondary text-xs">
+              Try a different name, district, state, service or phone number.
+            </p>
+            <button
+              type="button"
+              onClick={() => setQuery('')}
+              className="mt-1 text-xs font-semibold text-accent hover:underline"
+            >
+              Clear search
+            </button>
+          </div>
         ) : (
           <div className="space-y-6">
 
-
-            {franchisePartners.length > 0 && (
+            {partners.length > 0 && (
               <div className="pt-2">
                 <div className="flex items-center gap-4 mb-5">
                   <div
@@ -118,13 +183,12 @@ export default function Contact() {
                 </div>
 
                 <div className="space-y-6">
-                  {franchisePartners.map((card) => (
+                  {partners.map((card) => (
                     <div
                       key={card._id}
                       className="bg-theme-card border border-theme rounded-2xl overflow-hidden"
                       style={{ borderTop: `3px solid ${FRANCHISE_COLOR}` }}
                     >
-                      {/* One separate card per person, newest first */}
                       <div className="p-3 sm:p-4 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-start">
                         {card.persons.map((person, pi) => (
                           <PersonCard key={`${person.name}-${pi}`} person={person} />
@@ -135,8 +199,9 @@ export default function Contact() {
                 </div>
               </div>
             )}
-            {contacts.map((stateCard, si) => {
-              const color = STATE_COLORS[si % STATE_COLORS.length]
+
+            {states.map((stateCard) => {
+              const color = STATE_COLORS[stateCard._ci % STATE_COLORS.length]
               return (
                 <div
                   key={stateCard._id}
@@ -159,7 +224,7 @@ export default function Contact() {
                   </div>
 
                   <div className="divide-y divide-theme">
-                    {stateCard.districts.map((d, di) => (
+                    {(stateCard.districts || []).map((d, di) => (
                       <div key={di} className="px-5 py-4">
                         <p
                           className="text-xs font-semibold uppercase tracking-widest mb-3"
@@ -169,7 +234,7 @@ export default function Contact() {
                         </p>
 
                         <div className="space-y-2">
-                          {d.persons.map((p, pi) => (
+                          {(d.persons || []).map((p, pi) => (
                             <div key={pi} className="flex items-center justify-between gap-4">
                               <span className="text-sm text-theme-primary font-medium">
                                 {p.name}
