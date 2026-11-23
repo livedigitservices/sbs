@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, QrCode, Settings, LogOut, Menu, X, ChevronRight, Sun, Moon, ExternalLink, Landmark, LayoutGrid, Plane, Phone, Users, Users2, Hotel, Briefcase, GraduationCap, Store, Link2 } from 'lucide-react'
+import { LayoutDashboard, QrCode,Bell, Settings, LogOut, Menu, X, ChevronRight, Sun, Moon, ExternalLink, Landmark, LayoutGrid, Plane, Phone, Users, Users2, Hotel, Briefcase, GraduationCap, Store, Link2 } from 'lucide-react'
 const NAV = [
   { to: '/admin',                  label: 'Dashboard',      icon: LayoutDashboard, exact: true },
   { to: '/admin/resources',        label: 'Assoc. Resources', icon: Users },
@@ -8,6 +8,7 @@ const NAV = [
   { to: '/admin/associates',       label: 'Associates',     icon: Users2 },
   { to: '/admin/registration-links', label: 'Registration Links', icon: Link2 },
   { to: '/admin/franchise-partners', label: 'Franchise Partners', icon: Store },
+  { to: '/admin/notices', label: "What's New", icon: Bell },
   { to: '/admin/qr',               label: 'QR Generator',   icon: QrCode },
   { to: '/admin/settings',         label: 'Settings',       icon: Settings },
 ]

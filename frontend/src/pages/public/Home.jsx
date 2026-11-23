@@ -17,15 +17,16 @@ const BLUE = '#2563EB'
 // Where a click on any notification takes the user.
 const NOTICE_LINK = '/associate-resources'
 
-// Fallback notifications. If the Settings collection has a `notifications`
-// key (array of strings or { text }), those are shown instead.
+const isExternal = (url) => /^https?:\/\//i.test(url)
+
+// Shown only if the notices API cannot be reached.
 const DEFAULT_NOTICES = [
   '2026 Admissions Closing soon hurry-up for last seats',
   'Master Classes on Online Business scheduled every month registerations open',
   'Franchise Partners Connect Program at Hyderabad & Vizag contact new associates',
-  'List your business with us to promote globally ',
+  'List your business with us to promote globally',
   'Online Bulk Resellers opportunity low investment regular income',
-]
+].map((text) => ({ text, link: NOTICE_LINK }))
 
 const SERVICE_CARDS = [
   {
@@ -72,12 +73,20 @@ const SERVICE_CARDS = [
   },
 ]
 
-const normalizeNotices = (raw) => {
-  if (!Array.isArray(raw)) return []
-  return raw
-    .map((n) => (typeof n === 'string' ? n : n?.text))
-    .map((t) => (t || '').trim())
-    .filter(Boolean)
+function NoticeLink({ url, children, ...props }) {
+  const target = (url || '').trim() || NOTICE_LINK
+  if (isExternal(target)) {
+    return (
+      <a href={target} target="_blank" rel="noopener noreferrer" {...props}>
+        {children}
+      </a>
+    )
+  }
+  return (
+    <Link to={target.startsWith('/') ? target : `/${target}`} {...props}>
+      {children}
+    </Link>
+  )
 }
 
 function NotificationCard({ notices }) {
@@ -107,10 +116,10 @@ function NotificationCard({ notices }) {
           className="notice-track"
           style={{ '--notice-duration': `${duration}s` }}
         >
-          {loop.map((text, i) => (
+          {loop.map(({ text, link }, i) => (
             <li key={i} aria-hidden={i >= notices.length}>
-              <Link
-                to={NOTICE_LINK}
+              <NoticeLink
+                url={link}
                 tabIndex={i >= notices.length ? -1 : 0}
                 className="group flex items-start gap-2.5 py-2.5 text-sm text-theme-secondary leading-snug transition-colors hover:text-accent cursor-pointer"
               >
@@ -123,7 +132,7 @@ function NotificationCard({ notices }) {
                   size={16}
                   className="shrink-0 mt-0.5 text-theme-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent"
                 />
-              </Link>
+              </NoticeLink>
             </li>
           ))}
         </ul>
@@ -134,17 +143,22 @@ function NotificationCard({ notices }) {
 
 export default function Home() {
   const [query, setQuery] = useState('')
-  const [notices, setNotices] = useState(DEFAULT_NOTICES)
+  const [notices, setNotices] = useState(null)
 
   useEffect(() => {
     let active = true
     api
-      .get('/settings')
+      .get('/notices')
       .then((r) => {
-        const list = normalizeNotices(r.data?.notifications)
-        if (active && list.length) setNotices(list)
+        if (!active) return
+        const list = (Array.isArray(r.data) ? r.data : [])
+          .filter((n) => n?.text?.trim())
+          .map((n) => ({ text: n.text.trim(), link: n.link }))
+        setNotices(list)
       })
-      .catch(() => {})
+      .catch(() => {
+        if (active) setNotices(DEFAULT_NOTICES)
+      })
     return () => {
       active = false
     }
@@ -198,9 +212,11 @@ export default function Home() {
 
       <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:py-6">
         {/* Notifications */}
-        <div className="mb-3">
-          <NotificationCard notices={notices} />
-        </div>
+        {notices && notices.length > 0 && (
+          <div className="mb-3">
+            <NotificationCard notices={notices} />
+          </div>
+        )}
 
         {/* Service search */}
         <SearchBar

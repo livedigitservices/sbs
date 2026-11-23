@@ -31,7 +31,7 @@ import AssociateLogin from './pages/associate/AssociateLogin'
 import AssociateRegister from './pages/associate/AssociateRegister'
 import AssociateLeads from './pages/associate/AssociateLeads'
 import AssociateTutors from './pages/associate/AssociateTutors'
-
+import AdminNotices from './pages/admin/AdminNotices'
 export default function App() {
   return (
     <Routes>
@@ -72,6 +72,7 @@ export default function App() {
         <Route path="qr" element={<AdminQRCode />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="tutors" element={<AdminTutors />} />
+        <Route path="notices" element={<AdminNotices />} />
         <Route path="freelance-posters" element={<AdminFreelancePosters />} />
       </Route>
 
