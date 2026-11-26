@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import { Phone, MapPin, Store, Briefcase, SearchX } from 'lucide-react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
+import { Phone, MapPin, Store, Briefcase, SearchX, ChevronLeft, ChevronRight } from 'lucide-react'
 import api from '../../api'
 import { normalizeCards } from '../../utils/franchise'
 import SearchBar from '../../components/SearchBar'
 
 const STATE_COLORS = ['#4488FF', '#FF4444', '#44DD88', '#FFD700', '#FF88AA', '#AA88FF']
 const FRANCHISE_COLOR = '#2563EB'
+const CARDS_PER_PAGE = 4
 
 // Keeps only digits and a leading "+" so tel: links are always well-formed,
 // even if a number was pasted into the Admin panel with spaces, dashes,
@@ -66,11 +67,69 @@ function PersonCard({ person }) {
   )
 }
 
+function StateCard({ stateCard }) {
+  const color = STATE_COLORS[stateCard._ci % STATE_COLORS.length]
+  return (
+    <div
+      className="bg-theme-card border border-theme rounded-2xl overflow-hidden"
+      style={{ borderTop: `3px solid ${color}` }}
+    >
+      <div
+        className="flex items-center gap-3 px-5 py-4"
+        style={{ background: `${color}10` }}
+      >
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center"
+          style={{ background: `${color}20` }}
+        >
+          <MapPin size={16} style={{ color }} />
+        </div>
+        <h2 className="text-theme-primary font-bold text-lg tracking-wide">
+          {stateCard.state}
+        </h2>
+      </div>
+
+      <div className="divide-y divide-theme">
+        {(stateCard.districts || []).map((d, di) => (
+          <div key={di} className="px-5 py-4">
+            <p
+              className="text-xs font-semibold uppercase tracking-widest mb-3"
+              style={{ color }}
+            >
+              {d.district}
+            </p>
+
+            <div className="space-y-2">
+              {(d.persons || []).map((p, pi) => (
+                <div key={pi} className="flex items-center justify-between gap-4">
+                  <span className="text-sm text-theme-primary font-medium">
+                    {p.name}
+                  </span>
+                  <a
+                    href={`tel:${cleanPhone(p.phone)}`}
+                    className="flex items-center gap-1.5 text-sm font-mono transition-opacity hover:opacity-70"
+                    style={{ color }}
+                  >
+                    <Phone size={12} strokeWidth={2} />
+                    {p.phone}
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function Contact() {
   const [contacts, setContacts] = useState([])
   const [franchisePartners, setFranchisePartners] = useState([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
+  const [page, setPage] = useState(1)
+  const scrollRef = useRef(null)
 
   useEffect(() => {
     Promise.all([
@@ -116,14 +175,55 @@ export default function Contact() {
     return { partners, states }
   }, [query, contacts, franchisePartners])
 
-  const noResults = !loading && query.trim() && partners.length === 0 && states.length === 0
+  // Flat list of every visible card: each service-provider person card,
+  // followed by each state card. This is what gets paginated.
+  const allCards = useMemo(() => {
+    const personCards = partners.flatMap((card) =>
+      card.persons.map((person, pi) => ({
+        type: 'person',
+        key: `p-${card._id}-${pi}-${person.name}`,
+        person,
+      }))
+    )
+    const stateCards = states.map((sc) => ({
+      type: 'state',
+      key: `s-${sc._id ?? sc._ci}`,
+      stateCard: sc,
+    }))
+    return [...personCards, ...stateCards]
+  }, [partners, states])
+
+  const totalPages = Math.max(1, Math.ceil(allCards.length / CARDS_PER_PAGE))
+  const currentPage = Math.min(page, totalPages)
+  const startIndex = (currentPage - 1) * CARDS_PER_PAGE
+  const pageCards = allCards.slice(startIndex, startIndex + CARDS_PER_PAGE)
+  const pagePersons = pageCards.filter((c) => c.type === 'person')
+  const pageStates = pageCards.filter((c) => c.type === 'state')
+
+  // Back to the first page whenever the search changes.
+  useEffect(() => {
+    setPage(1)
+  }, [query])
+
+  const goToPage = (p) => {
+    setPage(Math.min(Math.max(p, 1), totalPages))
+    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const noResults = !loading && query.trim() && allCards.length === 0
+
+  const navBtn =
+    'inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border border-theme bg-theme-card text-theme-primary transition-all hover:shadow-[0_8px_24px_rgba(37,99,235,0.12)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none'
 
   return (
     <div
       className="page-enter bg-theme-primary overflow-y-hidden"
       style={{ height: 'calc(100vh - 64px - 40px)' }}
     >
-      <div className="max-w-4xl mx-auto px-4 py-8 h-full overflow-y-auto scrollbar-hide">
+      <div
+        ref={scrollRef}
+        className="max-w-4xl mx-auto px-4 py-8 h-full overflow-y-auto scrollbar-hide"
+      >
 
         <div className="flex items-center gap-4 mb-5">
           <div
@@ -168,7 +268,7 @@ export default function Contact() {
         ) : (
           <div className="space-y-6">
 
-            {partners.length > 0 && (
+            {pagePersons.length > 0 && (
               <div className="pt-2">
                 <div className="flex items-center gap-4 mb-5">
                   <div
@@ -182,80 +282,53 @@ export default function Contact() {
                   </h2>
                 </div>
 
-                <div className="space-y-6">
-                  {partners.map((card) => (
-                    <div
-                      key={card._id}
-                      className="bg-theme-card border border-theme rounded-2xl overflow-hidden"
-                      style={{ borderTop: `3px solid ${FRANCHISE_COLOR}` }}
-                    >
-                      <div className="p-3 sm:p-4 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-start">
-                        {card.persons.map((person, pi) => (
-                          <PersonCard key={`${person.name}-${pi}`} person={person} />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+                <div
+                  className="bg-theme-card border border-theme rounded-2xl overflow-hidden"
+                  style={{ borderTop: `3px solid ${FRANCHISE_COLOR}` }}
+                >
+                  <div className="p-3 sm:p-4 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-start">
+                    {pagePersons.map(({ key, person }) => (
+                      <PersonCard key={key} person={person} />
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
 
-            {states.map((stateCard) => {
-              const color = STATE_COLORS[stateCard._ci % STATE_COLORS.length]
-              return (
-                <div
-                  key={stateCard._id}
-                  className="bg-theme-card border border-theme rounded-2xl overflow-hidden"
-                  style={{ borderTop: `3px solid ${color}` }}
+            {pageStates.map(({ key, stateCard }) => (
+              <StateCard key={key} stateCard={stateCard} />
+            ))}
+
+            {totalPages > 1 && (
+              <nav
+                aria-label="Contact pagination"
+                className="flex items-center justify-between gap-3 pt-2 pb-2"
+              >
+                <button
+                  type="button"
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={navBtn}
                 >
-                  <div
-                    className="flex items-center gap-3 px-5 py-4"
-                    style={{ background: `${color}10` }}
-                  >
-                    <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center"
-                      style={{ background: `${color}20` }}
-                    >
-                      <MapPin size={16} style={{ color }} />
-                    </div>
-                    <h2 className="text-theme-primary font-bold text-lg tracking-wide">
-                      {stateCard.state}
-                    </h2>
-                  </div>
+                  <ChevronLeft size={16} />
+                  Previous
+                </button>
 
-                  <div className="divide-y divide-theme">
-                    {(stateCard.districts || []).map((d, di) => (
-                      <div key={di} className="px-5 py-4">
-                        <p
-                          className="text-xs font-semibold uppercase tracking-widest mb-3"
-                          style={{ color }}
-                        >
-                          {d.district}
-                        </p>
+                <span className="text-xs sm:text-sm text-theme-secondary font-medium">
+                  Page {currentPage} of {totalPages}
+                </span>
 
-                        <div className="space-y-2">
-                          {(d.persons || []).map((p, pi) => (
-                            <div key={pi} className="flex items-center justify-between gap-4">
-                              <span className="text-sm text-theme-primary font-medium">
-                                {p.name}
-                              </span>
-                              <a
-                                href={`tel:${cleanPhone(p.phone)}`}
-                                className="flex items-center gap-1.5 text-sm font-mono transition-opacity hover:opacity-70"
-                                style={{ color }}
-                              >
-                                <Phone size={12} strokeWidth={2} />
-                                {p.phone}
-                              </a>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )
-            })}
+                <button
+                  type="button"
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={navBtn}
+                >
+                  Next
+                  <ChevronRight size={16} />
+                </button>
+              </nav>
+            )}
 
           </div>
         )}
